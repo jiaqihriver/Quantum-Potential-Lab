@@ -4,21 +4,24 @@
 
 内容依据 Donald A. Neamen《Semiconductor Physics and Devices: Basic Principles, 4th ed.》第 2–3 章，公式编号与教材一致。
 
+![网页首屏预览](docs/screenshot.png)
+
 ---
 
 ## 快速开始
 
 **方式一 · 在线打开（推荐）**
 
-浏览器访问：`https://jiaqihriver.github.io/Quantum-Potential-Lab/`
+👉 **https://jiaqihriver.github.io/Quantum-Potential-Lab/**
 
-> 若链接 404，说明 Pages 尚未开启：仓库页 → Settings → Pages → Source 选 "Deploy from a branch" → 分支 `main` / 目录 `/ (root)` → Save，一两分钟后生效。
+电脑、平板、手机均可访问；内容更新后此链接自动同步。
 
 **方式二 · 本地打开**
 
 克隆或下载本仓库，**双击 `index.html`** 即可。网页零依赖、无需联网、无需安装任何软件。
 
 > 建议：电脑或平板上使用（滑块交互 + 双画布并排）；手机可看，操作空间较小。
+> 若在线链接异常，可先用本地方式打开，并在仓库提交 issue。
 
 ---
 
