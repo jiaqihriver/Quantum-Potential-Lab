@@ -223,6 +223,12 @@ details.explore summary::before{content:"";width:0;height:0;border-left:7px soli
 details.explore[open] summary::before{transform:rotate(90deg)}
 details.explore .ans{padding:0 0 18px;color:var(--tx2);font-size:14.5px}
 details.explore .ans b{color:var(--tx)}
+details.faq{margin-top:10px;background:rgba(255,255,255,.03);border:1px solid var(--line)}
+details.faq summary{color:var(--tx);font-size:14.5px;padding:13px 0;font-weight:500}
+details.faq summary::before{border-left-color:var(--cyan)}
+details.faq .ans{padding-bottom:14px;font-size:14px}
+.faq-group{margin:30px 0 8px;font-weight:700;font-size:15.5px;color:var(--cyan);display:flex;align-items:center;gap:8px}
+.faq-group::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--cyan);opacity:.7;flex:none}
 
 /* ================= 总结表 ================= */
 table.sum{width:100%;border-collapse:collapse;margin-top:26px;font-size:14.5px}
@@ -778,6 +784,75 @@ footer b{color:var(--tx2)}
       <td>实验台④ · Kronig–Penney 模型 (§3.1.2)：导带/价带/带隙——一切器件物理的地基</td>
     </tr>
   </table>
+
+  <h3 style="margin-top:52px;font-size:21px">常见追问 FAQ：最可能被问到的 14 个问题</h3>
+  <p class="sec-intro">
+    课前预习、课后复习、课堂答疑都适用。追问的最好回应往往是"我们当场拖一下滑块"——每条答案都尽量给了网页里的现场验证方法。
+  </p>
+
+  <div class="faq-group">通用观念 · 波函数与不确定性</div>
+  <details class="faq">
+    <summary>波函数 ψ 到底是什么？我能"看见"它吗？它是复数怎么画出来的？</summary>
+    <div class="ans">ψ 本身看不见、也测不到——它是复函数，能观测的只有它的模方 |ψ|²，即在某处找到电子的<b>概率密度</b>。网页里两条曲线要分清：青色 <b>Re ψ</b> 是波函数实部的动画（有正有负、随时间振荡），橙色 <b>|ψ|²</b> 恒为正，才对应"概率"。可以把 ψ 理解成"概率波幅"：像水波一样能干涉叠加，但强度（模方）才对应"有多少"。</div>
+  </details>
+  <details class="faq">
+    <summary>不确定性原理是不是仪器不够好？将来技术进步能同时测准吗？</summary>
+    <div class="ans">不是技术问题。热身实验里随便怎么调滑块，Δx·Δk 乘积都不低于 1/2——这是"波"这种存在方式的数学性质：位置越局域，所需的波数分布必然越宽。电子本来就由波描述，所以这是它的<b>内禀属性</b>，与测量水平无关。宏观物体原子数巨大、德布罗意波长极短，才显得"测得准"。</div>
+  </details>
+  <details class="faq">
+    <summary>这和化学课的原子轨道、§2.4 的氢原子是什么关系？</summary>
+    <div class="ans">同一套薛定谔方程，不同的势能函数。氢原子：球对称吸引势 → 分立轨道 1s/2s/2p（教材 §2.4）；周期晶格：周期势 → 能带（实验台④）。化学里的轨道杂化与共价键，正是半导体 Sp³ 键和带隙的微观来源——三个实验台玩的是同一件事的三种"地形"。</div>
+  </details>
+
+  <div class="faq-group">实验台①② · 束缚、能级与台阶</div>
+  <details class="faq">
+    <summary>无限深阱外 ψ = 0，电子真的一点都出不去？这也太绝对了吧。</summary>
+    <div class="ans">在"无限高墙"这个理想化前提下是的——但现实没有无限势。换成<b>有限</b>势垒，波函数就会以指数尾巴渗出去（实验台②的 E&lt;V₀ 状态）。把①的"阱"和②的"垒"连起来看，"束缚"其实是个程度问题：墙越高，渗透越浅，能级越接近实验台①的分立值。</div>
+  </details>
+  <details class="faq">
+    <summary>n = 1 的电子在阱里动吗？速度是多少？</summary>
+    <div class="ans">在"动"——动量不为零（否则违反不确定性原理），但它不传播（驻波）。E₁ 就是<b>零点能</b>：被关起来的电子至少带这么多能量，永远不可能静止。看实验台①的 |ψ|²：中间大、两头无——它不是小球来回弹，而是概率云整体存在。经典小球的"匀速往返"图像只在 n 很大时才近似恢复。</div>
+  </details>
+  <details class="faq">
+    <summary>E &lt; V₀ 时 R = 1，那单个电子到底怎么"决定"渗不渗进去？</summary>
+    <div class="ans">没有"决定"。单个电子打上去，最终一定被弹回（透射流为零），但途中波幅确实渗进禁区、衰减、再"退"回来。概率的说法是：在禁区内<b>找到它</b>的概率不为零，但它永远不会出现在更远处。打一百万个电子，一百万个都回来——渗透是"过程可见、结果不变"。读数面板的 R=100%、T=0 就是这两句话的数值版。</div>
+  </details>
+  <details class="faq">
+    <summary>E &gt; V₀ 时被弹回的那部分，能量变了吗？岂不违反守恒？</summary>
+    <div class="ans">没有违反——这是<b>弹性散射</b>：反射电子与入射电子能量完全相同，变的只是方向。物理类比光学：光从空气射到玻璃表面，一部分立刻被反射。波在"波阻抗"突变处必有一部分反射，电子波同理。能量守恒在这里体现为 R + T = 1，读数面板可现场验证。</div>
+  </details>
+
+  <div class="faq-group">实验台③ · 隧穿</div>
+  <details class="faq">
+    <summary>隧穿时电子的能量从哪来？凭空"穿墙"不违反能量守恒吗？</summary>
+    <div class="ans">不违反，也不需要"借"能量。势垒内 E&lt;V₀ 意味着波数为虚数，波函数以指数衰减——这只是方程的另一个解，不涉及能量消耗。透射电子的能量与入射时<b>完全相同</b>。隧穿改变的只有"概率分配"：一部分 R、一部分 T，且 R+T=1。实验台③读数面板可以随时核对。</div>
+  </details>
+  <details class="faq">
+    <summary>隧穿需要多长时间？是瞬时的吗？</summary>
+    <div class="ans">定性上极快（飞秒量级），但"隧穿时间"的严格定义至今仍是<b>活跃的研究问题</b>——Larmor 时钟、光束偏移等不同测量方案给出不同结论。课堂上可以诚实地说：这是量子力学少数仍在被实验检验的基础问题之一，网页给出的是空间上的波函数，不涉及时标。</div>
+  </details>
+  <details class="faq">
+    <summary>闪存的电子天天隧穿，那我 U 盘的数据不是很快就没了？</summary>
+    <div class="ans">不会。写入后电子被俘获在浮栅的深势阱里，要隧穿回去必须穿过 ~2 nm 的 SiO₂ 氧化层，势垒高（~3.1 eV）——隧穿率低到能保持数据 10 年以上。擦除时反向加高压，把势垒"压薄"让它隧穿出来。用实验台③的 <b>闪存预设</b>看 T 的量级，就能体会这个设计的巧思：平时"堵"、擦除时"放"，全靠指数律。</div>
+  </details>
+  <details class="faq">
+    <summary>STM 的电子一直隧穿，不会把样品"打穿"或打坏吗？</summary>
+    <div class="ans">隧穿电流是纳安量级（每秒约 10¹⁰ 个电子），而且 STM 工作在<b>恒流模式</b>：电流偏大就把针尖抬高、偏小就放低，始终把间隙维持在 1 nm 左右。所以针尖"摸"的是电子云而不是原子本身——样品无损，还能感知 0.01 nm 的起伏。实验台③的 STM 预设里，把 a 改动 0.1 nm 看 T 变好几倍，就是恒流反馈需要灵敏的原因。</div>
+  </details>
+
+  <div class="faq-group">实验台④ · 能带</div>
+  <details class="faq">
+    <summary>带隙那段能量为什么"绝对"禁止？谁规定的？</summary>
+    <div class="ans">不是谁"禁止"，而是该能量下方程<b>无解</b>：要求 f(αa) = cos(ka) 必须落在 ±1 之间（式 3.30），落在之外就找不到满足周期边界条件的波函数——"没有容身的驻波"。允许带 = 有解的能量集合。带隙在 ka=±π/a 处打开，因为那里电子波长 λ=2a 恰与晶格周期匹配，布拉格反射最强。</div>
+  </details>
+  <details class="faq">
+    <summary>P′ 是我拖出来的参数，真实晶体（Si / GaAs）的 P′ 是多少？</summary>
+    <div class="ans">P′ = mV₀ba/ħ² 综合了势垒高度与宽度，在真实晶体中对应晶格势的强度——但它是<b>模型参数</b>，没有标准数值可查。Kronig–Penney 的价值在于定性给出"带隙如何随势强度变化"的物理图像；定量计算真实带隙需要三维 + 多电子处理（能带论与密度泛函计算，如 CP2K / VASP 这类 DFT 软件）。</div>
+  </details>
+  <details class="faq">
+    <summary>绝缘体和金属在这张能带图上怎么区分？空穴在哪里？</summary>
+    <div class="ans">还要多一块拼图——电子<b>如何填充能带</b>（费米–狄拉克统计，教材 §3.5）。金属：最上面的带只填一半 → 有空态可供电子运动 → 导电；绝缘体：上面的带恰好填满且带隙很宽 → 动不了；半导体：带隙窄（Si 1.1 eV），掺杂后载流子浓度可控。而"满带顶部缺席的电子"就是空穴（§3.2.4）——这正是总结区"下一站"预告的内容。</div>
+  </details>
 
   <h3 style="margin-top:46px;font-size:21px">挑战测验：七道题检验你的量子直觉</h3>
   <div id="quiz"></div>
