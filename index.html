@@ -1,0 +1,1794 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>势场中的电子 · 半导体量子力学探究实验室</title>
+<meta name="description" content="基于 Neamen《半导体物理与器件》(第4版) 第2章的交互式量子力学探究页面：无限深势阱、阶跃势、势垒隧穿">
+<style>
+/* ================= 基础 ================= */
+:root{
+  --bg0:#070b18; --bg1:#0c1226; --bg2:#111a36;
+  --panel:rgba(255,255,255,.045); --panel2:rgba(255,255,255,.07);
+  --line:rgba(255,255,255,.10); --line2:rgba(255,255,255,.18);
+  --tx:#e8edf8; --tx2:#9fb0cc; --tx3:#6b7c9c;
+  --cyan:#53d8ff; --orange:#ffb454; --purple:#b18cff; --green:#63e6a3; --red:#ff6b7a; --yellow:#ffe066;
+  --r:14px;
+  --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+  --serif:"Cambria Math","STIX Two Math","Times New Roman",Georgia,serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:radial-gradient(1200px 700px at 70% -10%, #16214a 0%, transparent 60%),
+             radial-gradient(900px 600px at 10% 110%, #1a1038 0%, transparent 55%),
+             linear-gradient(180deg,var(--bg0),var(--bg1) 40%,var(--bg0));
+  color:var(--tx);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:16px;line-height:1.75;
+}
+::selection{background:rgba(83,216,255,.3)}
+a{color:var(--cyan);text-decoration:none}
+sup{font-size:.68em}
+sub{font-size:.68em}
+.muted{color:var(--tx3);font-weight:400}
+.en{color:var(--tx3);font-size:.8em;font-weight:400;margin-left:.6em;letter-spacing:.03em}
+
+/* ================= 导航 ================= */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:99;
+  display:flex;align-items:center;gap:6px;
+  padding:10px 22px;
+  background:rgba(7,11,24,.72);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);
+}
+nav .brand{font-weight:700;margin-right:14px;color:var(--tx);white-space:nowrap}
+nav .brand .dot{color:var(--cyan)}
+nav a.nl{
+  color:var(--tx2);font-size:14px;padding:5px 12px;border-radius:99px;
+  border:1px solid transparent;white-space:nowrap;transition:.2s;
+}
+nav a.nl:hover{color:var(--tx)}
+nav a.nl.active{color:var(--cyan);border-color:rgba(83,216,255,.4);background:rgba(83,216,255,.08)}
+@media(max-width:760px){ nav{flex-wrap:wrap} nav .brand{width:100%} }
+
+/* ================= Hero ================= */
+header.hero{
+  min-height:92vh;display:flex;flex-direction:column;justify-content:center;
+  max-width:1080px;margin:0 auto;padding:120px 24px 60px;position:relative;
+}
+.hero .kicker{
+  display:inline-flex;align-items:center;gap:8px;
+  color:var(--cyan);font-size:14px;letter-spacing:.14em;margin-bottom:18px;
+}
+.hero .kicker::before{content:"";width:28px;height:1px;background:var(--cyan)}
+.hero h1{font-size:clamp(34px,6vw,62px);line-height:1.18;font-weight:800;letter-spacing:.01em}
+.hero h1 .grad{
+  background:linear-gradient(92deg,var(--cyan) 0%,var(--purple) 55%,var(--orange) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.hero p.lead{max-width:640px;color:var(--tx2);font-size:18px;margin-top:22px}
+.hero .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:30px}
+.hero .chips a{
+  padding:9px 16px;border:1px solid var(--line2);border-radius:99px;color:var(--tx);
+  font-size:14.5px;transition:.2s;background:var(--panel);
+}
+.hero .chips a:hover{border-color:var(--cyan);color:var(--cyan);transform:translateY(-2px)}
+.hero .chips a b{color:var(--cyan);margin-right:4px;font-family:var(--mono);font-weight:600}
+.hero .hint{
+  margin-top:34px;font-size:13.5px;color:var(--tx3);
+  border-left:2px solid var(--purple);padding-left:12px;
+}
+.scroll-cue{
+  position:absolute;bottom:26px;left:50%;transform:translateX(-50%);
+  color:var(--tx3);font-size:12px;letter-spacing:.2em;animation:bob 2.2s ease-in-out infinite;
+}
+@keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,8px)}}
+
+/* ================= 章节框架 ================= */
+main{max-width:1080px;margin:0 auto;padding:0 24px}
+section{padding:84px 0 30px}
+.sec-tag{
+  display:inline-block;font-family:var(--mono);font-size:12.5px;color:var(--cyan);
+  border:1px solid rgba(83,216,255,.35);border-radius:6px;padding:2px 10px;margin-bottom:14px;
+  background:rgba(83,216,255,.07);
+}
+.sec-tag.tb{color:var(--yellow);border-color:rgba(255,224,102,.35);background:rgba(255,224,102,.06)}
+section h2{font-size:clamp(24px,3.4vw,34px);font-weight:800;line-height:1.3}
+.sec-intro{color:var(--tx2);max-width:780px;margin-top:14px}
+
+/* ================= 卡片 ================= */
+.cardgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:26px}
+.card{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  padding:20px 20px 18px;position:relative;overflow:hidden;
+}
+.card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--ac,var(--cyan));opacity:.75}
+.card h4{font-size:16.5px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.card h4 .idx{font-family:var(--mono);font-size:12px;color:var(--ac,var(--cyan));border:1px solid padding:1px 7px;border-radius:5px}
+.card p{font-size:14.5px;color:var(--tx2)}
+.card .ref{margin-top:10px;font-size:12.5px;color:var(--tx3)}
+
+/* ================= 公式 ================= */
+.formula{
+  font-family:var(--serif);font-size:19px;color:#eef3ff;
+  background:rgba(83,216,255,.06);border:1px solid rgba(83,216,255,.18);
+  border-radius:10px;padding:12px 18px;margin:14px 0;
+  display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+}
+.formula .eq{font-style:italic;letter-spacing:.02em}
+.formula .fno{font-family:var(--mono);font-size:12px;color:var(--tx3);font-style:normal;white-space:nowrap}
+.formula b{color:var(--orange);font-weight:600}
+
+/* ================= 实验台布局 ================= */
+.lab{
+  display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:18px;margin-top:30px;
+}
+@media(max-width:900px){ .lab{grid-template-columns:1fr} }
+.lab-left{display:flex;flex-direction:column;gap:14px;min-width:0}
+.cvbox{
+  background:linear-gradient(180deg,rgba(10,16,34,.9),rgba(13,20,44,.9));
+  border:1px solid var(--line);border-radius:var(--r);padding:12px 12px 8px;
+}
+.cvbox .cvt{
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:13px;color:var(--tx2);margin:2px 6px 8px;
+}
+.cvbox .cvt .lg{display:flex;gap:14px}
+.cvbox .cvt .lg i{font-style:normal;display:inline-flex;align-items:center;gap:5px;font-size:12.5px}
+.cvbox .cvt .lg i::before{content:"";width:14px;height:3px;border-radius:2px;background:var(--c)}
+canvas{width:100%;display:block;border-radius:8px}
+#wellLevels,#wellPsi,#wellProb{height:210px}
+#stepCv,#barrierPsi{height:330px}
+#barrierTE{height:240px}
+#pkX,#pkK{height:250px}
+
+/* 控制面板 */
+.lab-panel{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  padding:18px;display:flex;flex-direction:column;gap:16px;align-self:start;
+}
+.ctl label{
+  display:flex;justify-content:space-between;font-size:13.5px;color:var(--tx2);margin-bottom:7px;
+}
+.ctl label .val{font-family:var(--mono);color:var(--cyan);font-weight:600}
+input[type=range]{
+  -webkit-appearance:none;width:100%;height:4px;border-radius:2px;
+  background:linear-gradient(90deg,var(--cyan) var(--p,50%),rgba(255,255,255,.14) var(--p,50%));
+  outline:none;cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:17px;height:17px;border-radius:50%;
+  background:#fff;border:3px solid var(--cyan);box-shadow:0 0 10px rgba(83,216,255,.55);cursor:grab;
+}
+input[type=range]::-moz-range-thumb{
+  width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid var(--cyan);cursor:grab;
+}
+.chips2{display:flex;flex-wrap:wrap;gap:8px}
+.chip{
+  padding:6px 13px;font-size:13.5px;border-radius:99px;cursor:pointer;user-select:none;
+  border:1px solid var(--line2);color:var(--tx2);background:transparent;transition:.15s;
+  font-family:inherit;
+}
+.chip:hover{border-color:var(--cyan);color:var(--cyan)}
+.chip.on{background:rgba(83,216,255,.14);border-color:var(--cyan);color:var(--cyan);font-weight:600}
+.chip.warn.on{background:rgba(255,180,84,.13);border-color:var(--orange);color:var(--orange)}
+select{
+  width:100%;padding:8px 10px;border-radius:8px;font-size:14px;
+  background:#141c38;color:var(--tx);border:1px solid var(--line2);outline:none;font-family:inherit;
+}
+.presets{display:flex;flex-direction:column;gap:7px}
+.presets .pt{font-size:12.5px;color:var(--tx3);letter-spacing:.08em;margin-bottom:2px}
+.pbtn{
+  text-align:left;padding:8px 12px;font-size:13.5px;border-radius:9px;cursor:pointer;
+  border:1px solid var(--line2);background:rgba(255,255,255,.03);color:var(--tx);transition:.15s;
+  font-family:inherit;line-height:1.45;
+}
+.pbtn:hover{border-color:var(--orange);background:rgba(255,180,84,.08)}
+.pbtn b{color:var(--orange)}
+.pbtn small{display:block;color:var(--tx3);font-size:11.5px}
+
+/* 读数 */
+.reads{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.read{
+  background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:9px;padding:9px 12px;
+}
+.read .k{font-size:11.5px;color:var(--tx3);margin-bottom:3px}
+.read .v{font-family:var(--mono);font-size:16px;color:var(--tx);font-weight:600}
+.read .v small{font-size:11px;color:var(--tx3);font-weight:400}
+.read.hl .v{color:var(--orange)}
+.read.cy .v{color:var(--cyan)}
+.read.gn .v{color:var(--green)}
+.read .bar{height:5px;border-radius:3px;background:rgba(255,255,255,.1);margin-top:7px;overflow:hidden}
+.read .bar i{display:block;height:100%;border-radius:3px;background:var(--cyan);transition:width .25s}
+.casechip{
+  font-size:13px;padding:7px 12px;border-radius:9px;text-align:center;font-weight:600;
+  background:rgba(99,230,163,.1);border:1px solid rgba(99,230,163,.4);color:var(--green);
+}
+.casechip.bad{background:rgba(255,107,122,.1);border-color:rgba(255,107,122,.4);color:var(--red)}
+.tipbox{font-size:12.5px;color:var(--tx3);line-height:1.6;border-top:1px dashed var(--line);padding-top:10px}
+
+/* ================= 知识卡 / 探究 ================= */
+.insight-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-top:22px}
+.insight-grid .card h4{color:var(--ac)}
+details.explore{
+  margin-top:22px;background:rgba(177,140,255,.06);border:1px solid rgba(177,140,255,.25);
+  border-radius:var(--r);padding:0 20px;
+}
+details.explore summary{
+  cursor:pointer;list-style:none;padding:16px 0;font-weight:600;color:var(--purple);
+  display:flex;align-items:center;gap:10px;font-size:15.5px;
+}
+details.explore summary::before{content:"";width:0;height:0;border-left:7px solid var(--purple);border-top:5px solid transparent;border-bottom:5px solid transparent;transition:.2s}
+details.explore[open] summary::before{transform:rotate(90deg)}
+details.explore .ans{padding:0 0 18px;color:var(--tx2);font-size:14.5px}
+details.explore .ans b{color:var(--tx)}
+
+/* ================= 总结表 ================= */
+table.sum{width:100%;border-collapse:collapse;margin-top:26px;font-size:14.5px}
+table.sum th,table.sum td{
+  padding:12px 14px;border:1px solid var(--line);text-align:left;vertical-align:top;
+}
+table.sum th{background:rgba(83,216,255,.08);color:var(--cyan);font-weight:600}
+table.sum td:first-child{font-weight:700;white-space:nowrap}
+table.sum tr td .m{font-family:var(--mono);font-size:12.5px;color:var(--tx3)}
+
+/* ================= 测验 ================= */
+.qbox{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  padding:18px 20px;margin-top:16px;
+}
+.qbox .qt{font-weight:700;margin-bottom:12px;font-size:15.5px}
+.qbox .qt .qn{color:var(--cyan);font-family:var(--mono);margin-right:8px;font-size:13px}
+.qopts{display:grid;gap:8px}
+.qopt{
+  text-align:left;padding:10px 14px;border-radius:9px;cursor:pointer;font-size:14.5px;
+  border:1px solid var(--line2);background:rgba(255,255,255,.03);color:var(--tx);transition:.15s;
+  font-family:inherit;line-height:1.5;
+}
+.qopt:hover:not(:disabled){border-color:var(--cyan)}
+.qopt.ok{border-color:var(--green);background:rgba(99,230,163,.12);color:var(--green);font-weight:600}
+.qopt.wrong{border-color:var(--red);background:rgba(255,107,122,.1);color:var(--red)}
+.qopt:disabled{cursor:default;opacity:.92}
+.qwhy{
+  margin-top:12px;font-size:13.5px;color:var(--tx2);border-left:2px solid var(--green);
+  padding:8px 12px;background:rgba(99,230,163,.06);display:none;
+}
+.qwhy.show{display:block}
+
+/* ================= 页脚 ================= */
+footer{
+  margin-top:90px;border-top:1px solid var(--line);padding:34px 24px 44px;
+  color:var(--tx3);font-size:13px;text-align:center;line-height:2;
+}
+footer b{color:var(--tx2)}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="brand">量子实验室<span class="dot">.</span>势场中的电子</span>
+  <a class="nl" href="#intro">导读</a>
+  <a class="nl" href="#well">① 无限深势阱</a>
+  <a class="nl" href="#step">② 阶跃势</a>
+  <a class="nl" href="#barrier">③ 势垒隧穿</a>
+  <a class="nl" href="#kp">④ 周期势</a>
+  <a class="nl" href="#summary">挑战</a>
+</nav>
+
+<header class="hero">
+  <div class="kicker">交互式探究 · SEMICONDUCTOR PHYSICS · CHAPTER 2</div>
+  <h1>同一个电子，<br>放进不同的<span class="grad">势能函数</span>里会怎样？</h1>
+  <p class="lead">
+    经典力学里，电子是个小球：能量够就翻过去，不够就被弹回来。量子力学里，电子是一列<b style="color:var(--cyan)">波</b>——
+    把它关进盒子、推上台阶、撞向高墙、再排成晶格，会发生经典物理完全无法解释的事。
+    这一页让你亲手拖动滑块，把 Neamen《半导体物理与器件》第 2 章的三个经典势场加上第 3 章开篇的周期势场"玩"一遍——从分立能级一路玩到能带。
+  </p>
+  <div class="chips">
+    <a href="#well"><b>①</b>无限深势阱 → 能量为什么量子化</a>
+    <a href="#step"><b>②</b>阶跃势 → 能量不足也能"渗进去"</a>
+    <a href="#barrier"><b>③</b>势垒 → 隧穿：穿墙术</a>
+    <a href="#kp"><b>④</b>周期势 → 能带与带隙</a>
+    <a href="#summary"><b>✔</b>挑战题 · 器件联系</a>
+  </div>
+  <div class="hint">
+    💡 用法：每个实验台都有滑块和预设。<b style="color:var(--yellow)">"教材例题"预设</b>可一键复现书上例 2.3 / 2.4 / 2.5 的数字，做完作业可以来这里验算。
+  </div>
+  <div class="scroll-cue">▼ 往下滑开始探究</div>
+</header>
+
+<main>
+
+<!-- ================= 导读 ================= -->
+<section id="intro">
+  <span class="sec-tag">§2.1 – §2.2 · 先把工具备齐</span>
+  <h2>导读：三个反直觉的结论，来自一个方程</h2>
+  <p class="sec-intro">
+    20 世纪初，黑体辐射、光电效应和原子光谱把经典物理逼进了死角：能量不再连续（普朗克、爱因斯坦），
+    粒子开始表现得像波（德布罗意：λ = h/p）。要描述这种"波样的粒子"，需要一个新方程——薛定谔波动方程。
+  </p>
+
+  <div class="cardgrid">
+    <div class="card" style="--ac:var(--cyan)">
+      <h4>波函数 ψ(x,t)</h4>
+      <p>量子力学用<b>波函数</b>完整描述电子状态。ψ 本身没有物理意义，但它的模方 |ψ|² 给出<b>概率密度</b>：
+      |ψ|²dV = 在 dV 内找到电子的概率。ψ 必须单值、有限、连续、可归一化。</p>
+      <div class="ref">对应教材 §2.2.2 波函数的物理意义</div>
+    </div>
+    <div class="card" style="--ac:var(--purple)">
+      <h4>薛定谔方程 = 游戏规则</h4>
+      <p>一维定态形式（教材式 2.13）：解出不同势场 V(x) 下的 ψ(x)，就预言了电子的全部行为。</p>
+      <div class="formula" style="margin:10px 0 0;font-size:17px">
+        <span class="eq">d²ψ/dx² + (2m/ħ²)[E − V(x)]ψ = 0</span>
+        <span class="fno">(2.13)</span>
+      </div>
+      <div class="ref">对应教材 §2.2 · 附录 E 有完整推导</div>
+    </div>
+    <div class="card" style="--ac:var(--orange)">
+      <h4>边界条件 = 一切的源头</h4>
+      <p>方程的通解有无穷多，是<b>边界条件</b>（ψ 连续、导数连续、束缚时 ψ→0）从中筛出允许的解。
+      接下来四个实验台会看到：同一句话，如何逼出"量子化""渗透""隧穿"和"能带"。</p>
+      <div class="ref">对应教材 §2.2.3 边界条件</div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:46px;font-size:21px">热身实验：不确定性原理 —— 你不可能同时知道电子在哪、跑多快</h3>
+  <p class="sec-intro">
+    右图是一个电子波包在动量空间（波数 k）中的分布，左图是它在位置空间的样子。
+    拖动滑块把 Δk 压窄（动量更确定）——注意左边发生了什么。
+  </p>
+
+  <div class="lab">
+    <div class="lab-left">
+      <div class="cvbox">
+        <div class="cvt"><span>位置空间 ψ(x,t)：<span class="muted">波包在跑，橙色是 |ψ|²（在哪找到它）</span></span>
+          <span class="lg"><i style="--c:var(--cyan)">Re ψ</i><i style="--c:var(--orange)">|ψ|²</i></span></div>
+        <canvas id="pkX"></canvas>
+      </div>
+      <div class="cvbox">
+        <div class="cvt"><span>波数空间 A(k)：<span class="muted">组成波包的一堆平面波</span></span></div>
+        <canvas id="pkK"></canvas>
+      </div>
+    </div>
+    <aside class="lab-panel">
+      <div class="ctl">
+        <label>波数分布宽度 Δk = σ<sub>k</sub> <span class="val" id="pkSigmaV"></span></label>
+        <input type="range" id="pkSigma" min="0.08" max="2.2" step="0.01" value="0.35">
+      </div>
+      <div class="reads">
+        <div class="read"><div class="k">位置不确定度 Δx</div><div class="v"><span id="pkDx"></span> <small>nm</small></div></div>
+        <div class="read"><div class="k">波数不确定度 Δk</div><div class="v"><span id="pkDk"></span> <small>nm⁻¹</small></div></div>
+        <div class="read hl" style="grid-column:1/-1"><div class="k">乘积 Δx · Δk —— 怎么调都不变！</div>
+          <div class="v">Δx·Δk = 0.500 <small>即 Δx·Δp = ħ/2</small></div></div>
+      </div>
+      <div class="tipbox">
+        教材按数量级将不确定性原理写作 Δp·Δx ≥ ħ（§2.1.3），精确表述为 Δp·Δx ≥ ħ/2，高斯波包恰好取到最小值。
+        对电子这样的微观粒子，这一限制<b style="color:var(--tx2)">无法回避</b>；宏观物体则小到测不出来。
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ================= 模块一：无限深势阱 ================= -->
+<section id="well">
+  <span class="sec-tag">实验台 ① · §2.3.2</span>
+  <h2>无限深势阱：把电子关进盒子，能量自己"断"成了台阶</h2>
+  <p class="sec-intro">
+    势能在盒子内为 0、盒外无穷大（教材图 2.6）：电子出不去，是典型的<b>束缚粒子</b>。
+    边界条件要求 ψ(0) = ψ(a) = 0 —— 盒子里只容得下"两端钉死的驻波"，
+    于是只有特定波长的波可以存在：
+  </p>
+  <div class="formula">
+    <span class="eq">ψ<sub>n</sub>(x) = √(2/a) · sin(nπx/a) ， E<sub>n</sub> = <b>n²</b>π²ħ²/2ma² = n²E₁ (n = 1, 2, 3…)</span>
+    <span class="fno">式 (2.36) (2.38)</span>
+  </div>
+
+  <div class="lab">
+    <div class="lab-left">
+      <div class="cvbox">
+        <div class="cvt"><span>能级图：<span class="muted">量子数 n 越大，台阶越陡 —— Eₙ ∝ n²</span></span></div>
+        <canvas id="wellLevels"></canvas>
+      </div>
+      <div class="cvbox">
+        <div class="cvt"><span>波函数 ψ<sub>n</sub>(x)：<span class="muted">两端钉死的驻波，正在"呼吸"</span></span>
+          <span class="lg"><i style="--c:var(--cyan)">ψₙ</i><i style="--c:rgba(232,237,248,.5)">±包络</i></span></div>
+        <canvas id="wellPsi"></canvas>
+      </div>
+      <div class="cvbox">
+        <div class="cvt"><span>概率密度 |ψ<sub>n</sub>|²：<span class="muted">n=1 的电子最爱待在正中间，经典小球表示不解</span></span></div>
+        <canvas id="wellProb"></canvas>
+      </div>
+    </div>
+    <aside class="lab-panel">
+      <div class="ctl">
+        <label>阱宽 a <span class="val"><span id="wellAv"></span> nm</span></label>
+        <input type="range" id="wellA" min="0.4" max="15" step="0.05" value="1">
+      </div>
+      <div class="ctl">
+        <label>量子数 n（点选）</label>
+        <div class="chips2" id="wellN">
+          <button class="chip on" data-n="1">n=1</button>
+          <button class="chip" data-n="2">n=2</button>
+          <button class="chip" data-n="3">n=3</button>
+          <button class="chip" data-n="4">n=4</button>
+          <button class="chip" data-n="5">n=5</button>
+        </div>
+      </div>
+      <div class="ctl">
+        <label>电子所处的材料（有效质量 m*）</label>
+        <select id="wellMass">
+          <option value="1">真空中的自由电子 m₀</option>
+          <option value="0.067">GaAs 半导体 m* = 0.067 m₀</option>
+          <option value="0.26">Si 半导体 m* = 0.26 m₀</option>
+        </select>
+      </div>
+      <div class="reads">
+        <div class="read cy"><div class="k">当前能级 E<sub>n</sub></div><div class="v"><span id="wellEn"></span> <small>eV</small></div></div>
+        <div class="read"><div class="k">相邻间隔 ΔE = E<sub>n+1</sub>−E<sub>n</sub></div><div class="v"><span id="wellDE"></span> <small>eV</small></div></div>
+        <div class="read"><div class="k">基态 E₁ = ħ²π²/2ma²</div><div class="v"><span id="wellE1"></span> <small>eV</small></div></div>
+        <div class="read"><div class="k">波长 λ = 2a/n ｜ 节点数</div><div class="v"><span id="wellLam"></span> nm ｜ <span id="wellNodes"></span> 个</div></div>
+      </div>
+      <div class="presets">
+        <div class="pt">预设 · 教材与真实器件</div>
+        <button class="pbtn" data-preset='{"a":0.5,"m":1,"n":1}'><b>例 2.3</b>：5 Å 阱中的电子<small>书上算得 E₁=1.51 eV、E₂=6.04 eV、E₃=13.59 eV</small></button>
+        <button class="pbtn" data-preset='{"a":10,"m":0.067,"n":1}'><b> GaAs 量子阱</b>：a=10 nm<small>真实半导体量子阱激光器的有源区</small></button>
+        <button class="pbtn" data-preset='{"a":1,"m":1,"n":1}'><b>强限制</b>：a=1 nm 自由电子<small>限制越紧，能级被抬得越高</small></button>
+      </div>
+      <div class="tipbox">试试：把 a 从 1 nm 拉到 10 nm，观察能级台阶怎么"塌"回去 —— 这就是 L→∞ 时回到经典连续能量的过程。</div>
+    </aside>
+  </div>
+
+  <div class="insight-grid">
+    <div class="card" style="--ac:var(--cyan)">
+      <h4>束缚 ⇒ 驻波 ⇒ 量子化</h4>
+      <p>能量量子化不是额外假设，而是"波 + 边界条件"的必然结果：波要两端为零，就只剩 nπ/a 这几个波数可选。</p>
+    </div>
+    <div class="card" style="--ac:var(--orange)">
+      <h4>E₁ ∝ 1/(m*a²)</h4>
+      <p>盒子越小、粒子越轻，能级被抬得越高、间隔越大——<b>量子约束效应</b>。GaAs 的 m* 只有 0.067m₀，
+      同样尺寸下能级间隔比 Si 大得多，所以量子阱/量子点器件爱用 III-V 材料。</p>
+    </div>
+    <div class="card" style="--ac:var(--green)">
+      <h4>半导体里的真实"盒子"</h4>
+      <p>GaAs/AlGaAs 量子阱（教材 §9.3.3 的 2DEG）就是把窄带隙材料夹在宽带隙材料中间做成的有限深势阱；
+      量子点则三个方向都受限——发光波长随尺寸可调，用于 QLED 显示。</p>
+    </div>
+  </div>
+
+  <details class="explore">
+    <summary>探究问题：为什么 n 不能取 0？n=0 意味着什么？</summary>
+    <div class="ans">
+      n=0 时 k=0，ψ(x) ≡ 0 —— 处处概率为零，等于"盒子里没有电子"，不是一个物理状态。
+      所以束缚电子<b>最低也只能停在 E₁</b>（零点能），永远不可能静止在阱底。
+      这是不确定性原理的直接后果：位置被限制在 a 内（Δx 有限），动量就不可能为零。经典小球可以躺在盒底，量子电子不行。
+    </div>
+  </details>
+</section>
+
+<!-- ================= 模块二：阶跃势 ================= -->
+<section id="step">
+  <span class="sec-tag">实验台 ② · §2.3.3</span>
+  <h2>阶跃势：能量够也会被弹回来，能量不够也能"渗过去"</h2>
+  <p class="sec-intro">
+    x&lt;0 处 V=0，x&gt;0 处 V=V₀（教材图 2.8）：一束电子从左打向台阶。
+    经典力学的预言只有两种：能量够（E&gt;V₀）→ 翻过去；不够（E&lt;V₀）→ 原路弹回。
+    量子力学各给出一个"惊喜"：
+  </p>
+  <div class="formula">
+    <span class="eq">E&lt;V₀ 时：ψ₂(x) = A₂e<sup>−k₂x</sup>，k₂ = √(2m(V₀−E))/ħ ，R = 1 但 |ψ₂|² ≠ 0</span>
+    <span class="fno">式 (2.45) (2.46) (2.59)</span>
+  </div>
+
+  <div class="lab">
+    <div class="lab-left">
+      <div class="cvbox">
+        <div class="cvt"><span>波函数实时演化：<span class="muted">红色区域 = 经典禁区（E &lt; V 的地盘）</span></span>
+          <span class="lg"><i style="--c:var(--cyan)">Re ψ(x,t)</i></span></div>
+        <canvas id="stepCv"></canvas>
+      </div>
+    </div>
+    <aside class="lab-panel">
+      <div class="ctl">
+        <label>电子能量 E <span class="val"><span id="stepEv"></span> eV</span></label>
+        <input type="range" id="stepE" min="0.02" max="3" step="0.01" value="1.5">
+      </div>
+      <div class="ctl">
+        <label>台阶高度 V₀ <span class="val"><span id="stepVv"></span> eV</span></label>
+        <input type="range" id="stepV" min="0.05" max="3" step="0.01" value="1">
+      </div>
+      <div class="ctl">
+        <label>显示放大倍数（观察小振幅）<span class="val">×<span id="stepGv">1</span></span></label>
+        <input type="range" id="stepGain" min="0" max="3" step="0.1" value="0">
+      </div>
+      <div class="ctl">
+        <label>材料（有效质量 m*）</label>
+        <select id="stepMass">
+          <option value="1">真空中的自由电子 m₀</option>
+          <option value="0.067">GaAs m* = 0.067 m₀</option>
+          <option value="0.26">Si m* = 0.26 m₀</option>
+        </select>
+      </div>
+      <div class="casechip" id="stepCase">E &gt; V₀ · 部分反射 + 部分透射</div>
+      <div class="reads">
+        <div class="read"><div class="k">反射系数 R</div><div class="v"><span id="stepR"></span><div class="bar"><i id="stepRb" style="background:var(--red)"></i></div></div></div>
+        <div class="read"><div class="k">透射系数 T</div><div class="v"><span id="stepT"></span><div class="bar"><i id="stepTb" style="background:var(--green)"></i></div></div></div>
+        <div class="read hl"><div class="k">穿透深度 d = 1/k₂（衰减到 1/e）</div><div class="v"><span id="stepD">—</span></div></div>
+        <div class="read"><div class="k">衰减常数 k₂</div><div class="v"><span id="stepK2">—</span></div></div>
+      </div>
+      <div class="presets">
+        <div class="pt">预设</div>
+        <button class="pbtn" data-preset='{"E":1.5,"V0":1,"m":1}'><b>E &gt; V₀</b>：能量充足<small>居然还是有一半概率被弹回来！</small></button>
+        <button class="pbtn" data-preset='{"E":0.5,"V0":1,"m":1}'><b>E &lt; V₀</b>：能量不足<small>全反射，但波函数渗进了禁区</small></button>
+        <button class="pbtn" data-preset='{"E":0.0285,"V0":0.057,"m":1}'><b>例 2.4</b>：V₀ = 2E 的小台阶<small>书上算得穿透深度 d = 11.6 Å ≈ 2 个硅晶格常数</small></button>
+        <button class="pbtn" data-preset='{"E":0.1,"V0":0.3,"m":0.067}'><b>GaAs/AlGaAs 异质结</b><small>导带偏移就是真实台阶；波函数渗入势垒侧 → 2DEG 的真实形状</small></button>
+      </div>
+    </aside>
+  </div>
+
+  <div class="insight-grid">
+    <div class="card" style="--ac:var(--red)">
+      <h4>惊喜一：E &gt; V₀ 也会被弹回</h4>
+      <p>R = [(k₁−k₂)/(k₁+k₂)]² ≠ 0：只要势能<b>突然变化</b>，波就会部分反射——和光从空气进入玻璃的界面反射一个道理。
+      经典小球"能量够就一定过去"在这里失效。</p>
+    </div>
+    <div class="card" style="--ac:var(--orange)">
+      <h4>惊喜二：E &lt; V₀ 也能渗入禁区</h4>
+      <p>数学上因为 ψ 和 ψ′ 在界面必须连续，禁区里的解只能是指数衰减的"尾巴"（e<sup>−k₂x</sup>）。
+      R=1：电子最终都被弹回，但在禁区内<b>找到它的概率不为零</b>——经典力学里这是 0。</p>
+    </div>
+    <div class="card" style="--ac:var(--green)">
+      <h4>为什么半导体人关心它</h4>
+      <p>异质结界面（GaAs/AlGaAs、教材 §9.3）就是真实的阶跃势：台阶高度 = 导带偏移 ΔE<sub>C</sub>。
+      波函数向势垒侧渗透多少，直接决定二维电子气 (2DEG) 的有效厚度与量子阱能级——高电子迁移率晶体管 (HEMT) 的设计起点。</p>
+    </div>
+  </div>
+
+  <details class="explore">
+    <summary>探究问题：把 E 从 V₀ 上方缓慢调到下方，波函数形状是怎么"过渡"的？</summary>
+    <div class="ans">
+      注意看 E→V₀ 的瞬间：k₂ = √(2m(E−V₀))/ħ → 0，右侧的振荡波长被拉到无穷长（E&gt;V₀），
+      恰好衔接左侧的指数衰减（E&lt;V₀）。两条解在 E=V₀ 处平滑相连，T 连续地降到 0。
+      这正是"振荡解 e<sup>ik₂x</sup> 与衰减解 e<sup>−k₂x</sup> 本是同一个解的实部与虚部波数"的体现。
+    </div>
+  </details>
+</section>
+
+<!-- ================= 模块三：势垒隧穿 ================= -->
+<section id="barrier">
+  <span class="sec-tag">实验台 ③ · §2.3.4</span>
+  <h2>势垒隧穿：穿墙术，半导体器件的看家本领</h2>
+  <p class="sec-intro">
+    现在把台阶抬成宽度有限的墙：V=V₀，0&lt;x&lt;a（教材图 2.9）。E&lt;V₀ 的电子按经典力学 100% 被弹回；
+    量子力学却说：墙后的波函数虽然小，但<b>不为零</b> —— 电子有一定概率直接"穿墙"出现在墙另一侧。
+    教材给出的近似透射系数（E≪V₀ 时）：
+  </p>
+  <div class="formula">
+    <span class="eq">T ≈ 16(E/V₀)(1−E/V₀) · e<sup>−2k₂a</sup> ，k₂ = √(2m(V₀−E))/ħ</span>
+    <span class="fno">式 (2.63)</span>
+  </div>
+
+  <div class="lab">
+    <div class="lab-left">
+      <div class="cvbox">
+        <div class="cvt"><span>波函数穿透全过程：<span class="muted">提高放大倍数，看墙内与墙后的微弱信号</span></span>
+          <span class="lg"><i style="--c:var(--cyan)">Re ψ(x,t)</i></span></div>
+        <canvas id="barrierPsi"></canvas>
+      </div>
+      <div class="cvbox">
+        <div class="cvt"><span>透射系数 T 随能量 E 的变化（对数坐标）：<span class="muted">白点是当前工作点</span></span></div>
+        <canvas id="barrierTE"></canvas>
+      </div>
+    </div>
+    <aside class="lab-panel">
+      <div class="ctl">
+        <label>势垒模式</label>
+        <div class="chips2">
+          <button class="chip warn on" id="modeSingle" onclick="return false;">单势垒</button>
+          <button class="chip warn" id="modeDouble" onclick="return false;">双势垒 · 共振隧穿</button>
+        </div>
+      </div>
+      <div class="ctl">
+        <label>电子能量 E <span class="val"><span id="barEv"></span> eV</span></label>
+        <input type="range" id="barE" min="0.02" max="3" step="0.01" value="2">
+      </div>
+      <div class="ctl">
+        <label>势垒高度 V₀ <span class="val"><span id="barVv"></span> eV</span></label>
+        <input type="range" id="barV" min="0.2" max="20" step="0.1" value="20">
+      </div>
+      <div class="ctl">
+        <label>势垒宽度 a <span class="val"><span id="barAv"></span> nm</span></label>
+        <input type="range" id="barA" min="0.1" max="3" step="0.05" value="0.3">
+      </div>
+      <div class="ctl" id="barWCtl" style="display:none">
+        <label>阱宽 w（两垒之间）<span class="val"><span id="barWv"></span> nm</span></label>
+        <input type="range" id="barW" min="2" max="8" step="0.1" value="5">
+      </div>
+      <div class="ctl">
+        <label>显示放大倍数 <span class="val">×<span id="barGv">1</span></span></label>
+        <input type="range" id="barGain" min="0" max="3" step="0.1" value="0">
+      </div>
+      <div class="ctl">
+        <label>材料（有效质量 m*）</label>
+        <select id="barMass">
+          <option value="1">自由电子 m₀</option>
+          <option value="0.067">GaAs 电子 0.067 m₀</option>
+          <option value="0.5">SiO₂ 电子 0.5 m₀</option>
+        </select>
+      </div>
+      <div class="casechip" id="barRes" style="display:none">⚡ 接近共振！T → 1，几乎全部透过</div>
+      <div class="reads">
+        <div class="read hl"><div class="k">隧穿概率 T（精确解）</div><div class="v" id="barT"></div></div>
+        <div class="read"><div class="k">教材近似式 (2.63)</div><div class="v" id="barTapprox">—</div></div>
+        <div class="read"><div class="k">衰减常数 k₂</div><div class="v"><span id="barK2"></span> <small>nm⁻¹</small></div></div>
+        <div class="read"><div class="k">指数因子 e<sup>−2k₂a</sup></div><div class="v" id="barExp"></div></div>
+      </div>
+      <div class="presets">
+        <div class="pt">预设 · 教材例题与真实器件</div>
+        <button class="pbtn" data-preset='{"E":2,"V0":20,"a":0.3,"m":1,"mode":"single"}'><b>例 2.5</b>：2 eV 撞 20 eV×3 Å 墙<small>书上用式(2.63)算隧穿概率 → 约百万分之三</small></button>
+        <button class="pbtn" data-preset='{"E":0.5,"V0":4.5,"a":1,"m":1,"mode":"single"}'><b>STM 扫描隧道显微镜</b><small>针尖-样品间隙 1 nm；间隙变化 0.1 nm → 电流变化数倍，这就是它的原子级分辨率</small></button>
+        <button class="pbtn" data-preset='{"E":2,"V0":3.1,"a":2,"m":0.5,"mode":"single"}'><b>闪存写擦 (SiO₂)</b><small>电子隧穿穿过 ~2 nm 栅氧化层被俘获/释放 = 数据的"1"和"0"</small></button>
+        <button class="pbtn" data-preset='{"E":0.45,"V0":1,"a":2,"w":5,"m":0.067,"mode":"double"}'><b>RTD 共振隧穿二极管</b><small>GaAs/AlGaAs 双势垒；拖动 E 找 T–E 曲线上的尖峰</small></button>
+      </div>
+    </aside>
+  </div>
+
+  <div class="insight-grid">
+    <div class="card" style="--ac:var(--cyan)">
+      <h4>对宽度的指数敏感</h4>
+      <p>T ∝ e<sup>−2k₂a</sup>：势垒宽度加倍，隧穿概率大约<b>平方</b>（直接掉几个数量级）。
+      这就是 STM 能感知 0.01 nm 高低起伏、闪存必须把氧化层做到 2 nm 量级的原因。</p>
+    </div>
+    <div class="card" style="--ac:var(--orange)">
+      <h4>对质量同样敏感</h4>
+      <p>k₂ ∝ √m*：GaAs 电子 (0.067m₀) 比 SiO₂ 中电子 (0.5m₀) 的隧穿能力强约 √(0.5/0.067) ≈ 2.7 倍（同样势垒下）。
+      有效质量是半导体量子输运设计的第一参数。</p>
+    </div>
+    <div class="card" style="--ac:var(--purple)">
+      <h4>E &gt; V₀ 也有戏：共振</h4>
+      <p>看 T–E 曲线：E 超过 V₀ 后 T 也不是 1，而是在"共振峰与峰谷"之间起伏；
+      双势垒模式下，阱内准束缚态对应的能量上出现 T→1 的尖锐共振峰——RTD 器件负阻特性的来源。</p>
+    </div>
+  </div>
+
+  <details class="explore">
+    <summary>探究问题：势垒宽度 a 加倍，T 大约怎么变？用 STM 预设亲自验证。</summary>
+    <div class="ans">
+      T ∝ e<sup>−2k₂a</sup>，a 加倍 → T 平方。STM 预设下 (k₂≈9.6 nm⁻¹)：a=1.0 nm 时 T≈6×10⁻⁹，
+      a=2.0 nm 时 T≈4×10⁻¹⁷ —— 降了 8 个数量级，电子基本"绝望"了。
+      反过来，针尖靠近 0.1 nm（a=0.9），T 增大 ~6 倍。指数律是隧穿的灵魂。
+    </div>
+  </details>
+</section>
+
+<!-- ================= 模块四：周期势 → 能带 ================= -->
+<section id="kp">
+  <span class="sec-tag">实验台 ④ · 第 3 章 §3.1.2</span>
+  <h2>周期势：把势阱排成晶格，能级就"晕染"成了能带</h2>
+  <p class="sec-intro">
+    把实验台①的势阱一个接一个排成周期阵列（Kronig–Penney 模型，教材图 3.6）：相邻阱之间有了沟通，
+    分立能级展宽成<b>允许带</b>，带与带之间出现<b>禁带</b>——这就是能带论的起源。
+    教材把势垒压窄增高（b→0、V₀→∞，乘积 bV₀ 保持有限），整个周期势只剩一个强度参数 P′：
+  </p>
+  <div class="formula">
+    <span class="eq">f(αa) = <b>P′</b>·sin(αa)/(αa) + cos(αa) = cos(ka) ， P′ = mV₀ba/ħ²</span>
+    <span class="fno">式 (3.23) (3.24)</span>
+  </div>
+  <p class="sec-intro" style="margin-top:-4px">
+    其中 α = √(2mE)/ħ（阱内波数）。右端 cos(ka) 只能在 ±1 之间取值，所以<b>只有 |f(αa)| ≤ 1 的能量才被允许</b>（式 3.29–3.30）
+    ——左图曲线钻出 ±1 带状区的段落，就是禁带。
+  </p>
+
+  <div class="lab">
+    <div class="lab-left">
+      <div class="cvbox">
+        <div class="cvt"><span>色散函数 f(αa)：<span class="muted">绿段 = |f| ≤ 1 允许带 · 红段 = 禁带（教材图 3.8c）</span></span></div>
+        <canvas id="kpF"></canvas>
+      </div>
+      <div class="cvbox">
+        <div class="cvt"><span>还原 E–k 能带图：<span class="muted">灰虚线 = P′→0 自由电子抛物线（折叠）· 橙虚线 = 孤立阱能级 n²E₁</span></span></div>
+        <canvas id="kpEk"></canvas>
+      </div>
+    </div>
+    <aside class="lab-panel">
+      <div class="ctl">
+        <label>势垒强度 P′ <span class="val" id="kpPv"></span></label>
+        <input type="range" id="kpP" min="0.3" max="25" step="0.1" value="8">
+      </div>
+      <div class="ctl">
+        <label>阱宽 a（晶格常数尺度）<span class="val"><span id="kpAv"></span> nm</span></label>
+        <input type="range" id="kpA" min="0.4" max="2" step="0.05" value="1">
+      </div>
+      <div class="ctl">
+        <label>材料（有效质量 m*）</label>
+        <select id="kpMass">
+          <option value="1">真空中的自由电子 m₀</option>
+          <option value="0.067">GaAs m* = 0.067 m₀</option>
+          <option value="0.26">Si m* = 0.26 m₀</option>
+        </select>
+      </div>
+      <div class="reads">
+        <div class="read"><div class="k">基准：孤立阱能级 E₁ = π²ħ²/2ma²</div><div class="v"><span id="kpE1"></span> <small>eV</small></div></div>
+        <div class="read cy"><div class="k">第 1 允许带（底 – 顶）</div><div class="v" id="kpB1"></div></div>
+        <div class="read hl"><div class="k">第 1 禁带宽度 E<sub>g,12</sub>（带 2 底 − 带 1 顶）</div><div class="v" id="kpG12"></div></div>
+        <div class="read"><div class="k">带隙打开位置</div><div class="v">ka = ±π/a <small>布拉格面</small></div></div>
+      </div>
+      <div class="presets">
+        <div class="pt">预设 · 在两个极端之间拖动 P′</div>
+        <button class="pbtn" data-preset='{"P":0.4}'><b>P′ → 0</b>：近自由电子<small>带隙几乎闭合，能带连成自由电子抛物线（式 3.25–3.28）</small></button>
+        <button class="pbtn" data-preset='{"P":8}'><b>P′ = 8</b>：一般晶体<small>窄带 + 明显带隙——半导体的典型画面</small></button>
+        <button class="pbtn" data-preset='{"P":25}'><b>P′ → ∞</b>：强束缚<small>允许带收缩成点 = 孤立无限深势阱的分立能级（实验台①）</small></button>
+      </div>
+      <div class="tipbox">试试：把 P′ 从 25 慢慢拖到 0.4——分立能级"晕染"成带、再连成连续谱。两个极端正是实验台①与自由电子气。</div>
+    </aside>
+  </div>
+
+  <div class="insight-grid">
+    <div class="card" style="--ac:var(--red)">
+      <h4>带隙从哪来：布拉格反射</h4>
+      <p>ka = ±π/a 时电子波长 λ = 2a，恰为晶格周期的两倍——相邻原子面的反射波同相叠加（布拉格条件）。
+      波函数分裂成两个驻波解，一个把概率堆在阱心（能量低）、一个堆在垒边（能量高），能量差即禁带。</p>
+    </div>
+    <div class="card" style="--ac:var(--cyan)">
+      <h4>一个参数 P′ 串起全章</h4>
+      <p>P′ = mV₀ba/ħ² 衡量周期势垒的"强度"：P′→0 是自由电子气（§3.1.3 的抛物线），P′→∞ 是孤立势阱的分立能级（实验台①）。
+      真实晶体介于其间——晶格势越强，带越窄、隙越宽。</p>
+    </div>
+    <div class="card" style="--ac:var(--green)">
+      <h4>能带论 = 器件物理的地基</h4>
+      <p>允许带演化出<b>导带与价带</b>：Si 带隙 1.1 eV、GaAs 1.4 eV、金刚石 5.5 eV——带隙宽度决定材料用途。
+      第 3 章接着引入 k 空间与有效质量（§3.2–3.3），第 4 章用掺杂决定"带里装多少电子"。</p>
+    </div>
+  </div>
+
+  <details class="explore">
+    <summary>探究问题：允许带的边缘为什么恰好落在孤立阱能级 Eₙ = n²E₁ 上？</summary>
+    <div class="ans">
+      把 αa = nπ 代入式 (3.24)：sin(nπ)/(nπ) = 0，f = cos(nπ) = ±1——恰好是允许条件 |f| ≤ 1 的边界，
+      对应能量 E = ħ²(nπ)²/2ma² = n²E₁。也就是说，<b>相邻阱之间完全隔离（P′→∞）时的分立能级，
+      正是耦合减弱时能带收拢回去的"锚点"</b>。拖动 P′ 可以看到每条允许带始终以 n²E₁ 为端点向外展开。
+    </div>
+  </details>
+</section>
+
+<!-- ================= 总结 & 挑战 ================= -->
+<section id="summary">
+  <span class="sec-tag">收官 · 把三个势场连起来</span>
+  <h2>总结：三种势场，三种电子行为，三大家族器件</h2>
+
+  <table class="sum">
+    <tr><th>势场</th><th>电子行为（量子 vs 经典）</th><th>半导体中的原型</th></tr>
+    <tr>
+      <td style="color:var(--cyan)">无限深势阱</td>
+      <td>束缚 → 驻波 → <b>分立能级</b> Eₙ ∝ n²。经典：能量连续、可静止。</td>
+      <td>量子阱激光器、量子点 (QLED)、2DEG (HEMT)</td>
+    </tr>
+    <tr>
+      <td style="color:var(--orange)">阶跃势 V₀</td>
+      <td>E&gt;V₀：部分反射；E&lt;V₀：全反射 + <b>指数渗透</b> d=1/k₂。经典：要么全过要么全弹。</td>
+      <td>异质结界面 (§9.3)、肖特基势垒边界、表面势垒</td>
+    </tr>
+    <tr>
+      <td style="color:var(--purple)">势垒 (宽 a)</td>
+      <td>E&lt;V₀：<b>隧穿</b> T ∝ e<sup>−2k₂a</sup>；E&gt;V₀：振荡透射。经典：E&lt;V₀ 绝无可能穿过。</td>
+      <td>STM、闪存隧穿氧化层、RTD、隧道二极管 (§8.5)、欧姆接触 (§9.2.2)</td>
+    </tr>
+    <tr>
+      <td style="color:var(--green)">周期势（晶格）</td>
+      <td>分立能级展宽成<b>允许带</b>，带间出现<b>禁带</b>（带隙在 ka=±π/a 布拉格面打开，带边锚定在 n²E₁）。经典：无对应概念。</td>
+      <td>实验台④ · Kronig–Penney 模型 (§3.1.2)：导带/价带/带隙——一切器件物理的地基</td>
+    </tr>
+  </table>
+
+  <h3 style="margin-top:46px;font-size:21px">挑战测验：七道题检验你的量子直觉</h3>
+  <div id="quiz"></div>
+
+  <details class="explore" style="margin-top:30px">
+    <summary>下一站：从能带到"可设计"的半导体</summary>
+    <div class="ans">
+      实验台④给出了能带的骨架：允许带、禁带、带隙。但要回答"这块晶体到底导电吗、导电多好"，还差两块拼图：
+      <b>第 3 章后半</b>——k 空间、有效质量与费米–狄拉克统计（§3.2–3.5），回答"电子在带里怎么运动、怎么填充"；
+      <b>第 4 章</b>——掺杂（§4.2），把载流子浓度从 10¹⁰ 精确调控到 10²⁰/cm³，变成工程参数。
+      两者合起来，就有了第 7 章的 pn 结——把 n 型区和 p 型区拼在一起，整个半导体器件时代开场。
+      你现在手里的三个势场 + 一个周期势，就是这一切的起点。
+    </div>
+  </details>
+</section>
+
+</main>
+
+<footer>
+  <b>势场中的电子 · 半导体量子力学探究实验室</b><br>
+  内容依据：Donald A. Neamen,《Semiconductor Physics and Devices: Basic Principles, 4th ed.》(2012), Chapter 2 ——
+  §2.1 量子力学原理 · §2.2 薛定谔波动方程 · §2.3 定态方程的三大应用 · §2.4 单电子原子；
+  Chapter 3 §3.1 允许带与禁带 · §3.1.2 Kronig–Penney 模型<br>
+  公式编号与教材一致 ｜ 所有物理量在浏览器本地实时计算 ｜ 支持离线使用 · 可直接投屏授课
+</footer>
+
+<script>
+/* ============================================================
+   公共库：复数运算 + 定态薛定谔方程求解器（分段常势 · 转移矩阵思想）
+   ============================================================ */
+"use strict";
+const QB = (() => {
+  const HBAR = 1.054571817e-34, ME = 9.1093837015e-31, QE = 1.602176634e-19;
+
+  /* ---- 复数（用 [re,im] 数组表示） ---- */
+  const padd  = (a,b) => [a[0]+b[0], a[1]+b[1]];
+  const psub  = (a,b) => [a[0]-b[0], a[1]-b[1]];
+  const pmul  = (a,b) => [a[0]*b[0]-a[1]*b[1], a[0]*b[1]+a[1]*b[0]];
+  const pmulr = (a,r) => [a[0]*r, a[1]*r];
+  const pdiv  = (a,b) => { const d=b[0]*b[0]+b[1]*b[1]; return [(a[0]*b[0]+a[1]*b[1])/d, (a[1]*b[0]-a[0]*b[1])/d]; };
+  const pabs2 = a => a[0]*a[0]+a[1]*a[1];
+  const expikx = (k,x) => { const e=Math.exp(-k[1]*x); return [e*Math.cos(k[0]*x), e*Math.sin(k[0]*x)]; };
+
+  /* ---- 波数：动能 dE=eV，质量 mRatio*m0，返回复波数 nm⁻¹ ---- */
+  const kOfE = (dE_eV, mRatio) => {
+    const arg = 2*mRatio*ME*dE_eV*QE;
+    return arg>=0 ? [Math.sqrt(arg)/HBAR*1e-9, 0] : [0, Math.sqrt(-arg)/HBAR*1e-9];
+  };
+
+  /* ---- 定态薛定谔方程求解：分段常势，从右往左定系数 ----
+     regions: [{x0,x1,V}]，V 单位 eV；两端引线区 V=0；入射波从左来 ---- */
+  function solveTISE(regions, E_eV, mRatio){
+    const kArr = regions.map(r => kOfE(E_eV - r.V, mRatio));
+    const N = regions.length;
+    const co = new Array(N);
+    co[N-1] = { A:[1,0], B:[0,0] };                 // 透射侧只有右行波
+    for(let i=N-2; i>=0; i--){
+      const xi  = regions[i].x1;                    // 界面位置
+      const k1  = kArr[i], k2 = kArr[i+1];
+      const {A:An, B:Bn} = co[i+1];
+      const p2  = expikx(k2, xi), m2 = expikx([-k2[0],-k2[1]], xi);
+      const psiR  = padd(pmul(An,p2), pmul(Bn,m2));
+      const dpsiR = pmul([-k2[1],k2[0]], psub(pmul(An,p2), pmul(Bn,m2))); // i·k2·(…)
+      const w  = pdiv(dpsiR, [-k1[1],k1[0]]);       // (ψ')/(i·k1) = u−v
+      const u  = pmulr(padd(psiR,w), .5), v = pmulr(psub(psiR,w), .5);
+      const p1 = expikx(k1, xi), m1 = expikx([-k1[0],-k1[1]], xi);
+      co[i] = { A: pdiv(u,p1), B: pdiv(v,m1) };
+    }
+    const a0 = pabs2(co[0].A);
+    const R  = pabs2(co[0].B)/a0;
+    const kN = kArr[N-1], k0 = kArr[0];
+    const T  = (kN[1]===0 && k0[0]>0) ? pabs2(co[N-1].A)/a0 * (kN[0]/k0[0]) : 0;
+    function psiAt(x){
+      let i = N-1;
+      for(let j=0;j<N;j++){ if(x>=regions[j].x0 && x<regions[j].x1){ i=j; break; } }
+      const c=co[i], k=kArr[i];
+      return padd(pmul(c.A, expikx(k,x)), pmul(c.B, expikx([-k[0],-k[1]],x)));
+    }
+    return { R, T, co, kArr, psiAt };
+  }
+
+  /* ---- 画布：DPR 自适应 ---- */
+  function fit(cv){
+    const dpr = window.devicePixelRatio||1;
+    const w = cv.clientWidth, h = cv.clientHeight;
+    const W = Math.max(1, Math.round(w*dpr)), H = Math.max(1, Math.round(h*dpr));
+    if(cv.width!==W || cv.height!==H){ cv.width=W; cv.height=H; }
+    const ctx = cv.getContext('2d');
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    return { ctx, W:w, H:h };
+  }
+
+  /* ---- 动画管理：仅可见画布重绘 ---- */
+  const anim = (() => {
+    const items = [];
+    const vis = new WeakMap();
+    const io = new IntersectionObserver(es => {
+      for(const e of es) vis.set(e.target, e.isIntersecting);
+    }, { rootMargin:'120px' });
+    function add(cv, draw){ items.push({cv, draw}); io.observe(cv); }
+    function loop(ts){
+      const t = ts/1000;
+      for(const it of items){ if(vis.get(it.cv)) { try{ it.draw(t); }catch(err){ console.error(err); } } }
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+    return { add };
+  })();
+
+  /* ---- 格式化 ---- */
+  const fmt = (x,d=2) => (+x).toFixed(d);
+  function sciHTML(x){
+    if(!isFinite(x) || x<=0) return "0";
+    const e = Math.floor(Math.log10(x));
+    const m = x/Math.pow(10,e);
+    if(e>=-2 && e<=3) return (+x.toPrecision(3)).toString();
+    return m.toFixed(2)+"×10<sup>"+e+"</sup>";
+  }
+  function fmtT(T){
+    if(T>=0.001) return (T*100).toFixed(1)+"%";
+    if(T<=1e-15) return "≈ 0";
+    return "≈"+sciHTML(T)+" <small>(1/"+sciHTML(1/T)+")</small>";
+  }
+  const el = id => document.getElementById(id);
+
+  return { HBAR, ME, QE, padd, psub, pmul, pmulr, pdiv, pabs2, expikx,
+           kOfE, solveTISE, fit, anim, fmt, sciHTML, fmtT, el };
+})();
+
+/* ============================================================
+   导读：不确定性原理 · 波包演示
+   ============================================================ */
+(() => {
+  const sSigma = QB.el('pkSigma');
+  const k0 = 5, vVis = 2.2;                 // 载波 k0=nm⁻¹(≈1eV)，视觉漂移速度 nm/s
+  function sk(){ return +sSigma.value; }
+  function upd(){
+    const s = sk();
+    QB.el('pkSigmaV').textContent = s.toFixed(2)+" nm⁻¹";
+    QB.el('pkDx').textContent = (1/(2*s)).toFixed(2);
+    QB.el('pkDk').textContent = s.toFixed(2);
+    const r = sSigma;
+    const p = (r.value-r.min)/(r.max-r.min)*100;
+    r.style.setProperty('--p', p+"%");
+  }
+  sSigma.addEventListener('input', upd); upd();
+
+  /* 位置空间 */
+  QB.anim.add(QB.el('pkX'), t => {
+    const {ctx,W,H} = QB.fit(QB.el('pkX'));
+    ctx.clearRect(0,0,W,H);
+    const s = sk(), span=24, xMin=-12;
+    let c = xMin + ((t*vVis) % (span+8)) - 4;
+    const X = x => (x-xMin)/span*W;
+    const midY=H*0.55, amp=H*0.36;
+    // 中线
+    ctx.strokeStyle="rgba(255,255,255,.14)"; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(0,midY); ctx.lineTo(W,midY); ctx.stroke();
+    // |ψ|² 填充
+    ctx.beginPath(); ctx.moveTo(0,H*0.92);
+    for(let i=0;i<=300;i++){
+      const x=xMin+i/300*span;
+      const p2=Math.exp(-2*s*s*(x-c)*(x-c));
+      ctx.lineTo(X(x), H*0.92 - p2*(H*0.34));
+    }
+    ctx.lineTo(W,H*0.92); ctx.closePath();
+    ctx.fillStyle="rgba(255,180,84,.18)"; ctx.fill();
+    ctx.beginPath();
+    for(let i=0;i<=300;i++){
+      const x=xMin+i/300*span;
+      const p2=Math.exp(-2*s*s*(x-c)*(x-c));
+      const y=H*0.92-p2*(H*0.34);
+      i?ctx.lineTo(X(x),y):ctx.moveTo(X(x),y);
+    }
+    ctx.strokeStyle="rgba(255,180,84,.8)"; ctx.lineWidth=1.5; ctx.stroke();
+    // Re ψ
+    ctx.beginPath();
+    for(let i=0;i<=900;i++){
+      const x=xMin+i/900*span;
+      const env=Math.exp(-s*s*(x-c)*(x-c));
+      const y=midY - env*Math.cos(k0*(x-c))*amp;
+      i?ctx.lineTo(X(x),y):ctx.moveTo(X(x),y);
+    }
+    ctx.strokeStyle="#53d8ff"; ctx.lineWidth=1.8;
+    ctx.shadowColor="rgba(83,216,255,.6)"; ctx.shadowBlur=7; ctx.stroke(); ctx.shadowBlur=0;
+    // 标注 Δx
+    const dx=1/(2*s);
+    ctx.fillStyle="rgba(232,237,248,.85)"; ctx.font="12px -apple-system,PingFang SC,sans-serif";
+    ctx.fillText("波包宽度 Δx ≈ "+dx.toFixed(2)+" nm", 10, 18);
+  });
+
+  /* 波数空间 */
+  QB.anim.add(QB.el('pkK'), () => {
+    const {ctx,W,H} = QB.fit(QB.el('pkK'));
+    ctx.clearRect(0,0,W,H);
+    const s=sk(), kMin=0, kMax=10;
+    const X=k=>(k-kMin)/(kMax-kMin)*W;
+    const base=H*0.8;
+    ctx.strokeStyle="rgba(255,255,255,.14)"; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(0,base); ctx.lineTo(W,base); ctx.stroke();
+    const amp=H*0.58;
+    ctx.beginPath(); ctx.moveTo(0,base);
+    for(let i=0;i<=300;i++){
+      const k=kMin+i/300*(kMax-kMin);
+      const g=Math.exp(-(k-k0)*(k-k0)/(2*s*s));
+      ctx.lineTo(X(k), base-g*amp);
+    }
+    ctx.lineTo(W,base); ctx.closePath();
+    ctx.fillStyle="rgba(83,216,255,.16)"; ctx.fill();
+    ctx.beginPath();
+    for(let i=0;i<=300;i++){
+      const k=kMin+i/300*(kMax-kMin);
+      const g=Math.exp(-(k-k0)*(k-k0)/(2*s*s));
+      const y=base-g*amp;
+      i?ctx.lineTo(X(k),y):ctx.moveTo(X(k),y);
+    }
+    ctx.strokeStyle="#53d8ff"; ctx.lineWidth=1.8; ctx.stroke();
+    // ±σk 虚线
+    ctx.setLineDash([4,4]); ctx.strokeStyle="rgba(255,180,84,.8)";
+    [k0-s,k0+s].forEach(k=>{ ctx.beginPath(); ctx.moveTo(X(k),base); ctx.lineTo(X(k),base-amp*0.61); ctx.stroke(); });
+    ctx.setLineDash([]);
+    ctx.fillStyle="rgba(232,237,248,.85)"; ctx.font="12px -apple-system,PingFang SC,sans-serif";
+    ctx.fillText("k₀ = 5 nm⁻¹（对应 E ≈ 1 eV）", 10, 18);
+    ctx.fillStyle="rgba(255,180,84,.9)";
+    ctx.fillText("Δk = σk = "+s.toFixed(2)+" nm⁻¹", X(k0+s)+6, base-amp*0.61-6);
+    ctx.fillStyle="rgba(155,176,204,.9)";
+    ctx.fillText("→ k (nm⁻¹)", W-84, base-8);
+  });
+})();
+
+/* ============================================================
+   实验台①：无限深势阱
+   ============================================================ */
+(() => {
+  const sA=QB.el('wellA'), selM=QB.el('wellMass');
+  const chips=[...document.querySelectorAll('#wellN .chip')];
+  let n=1;
+  const E1of=(a,m)=>Math.PI*Math.PI*QB.HBAR*QB.HBAR/(2*m*QB.ME*Math.pow(a*1e-9,2))/QB.QE;
+  function P(){ return { a:+sA.value, m:+selM.value }; }
+  function slideFill(r){ const p=(r.value-r.min)/(r.max-r.min)*100; r.style.setProperty('--p',p+"%"); }
+  function upd(){
+    const {a,m}=P(); const E1=E1of(a,m), En=E1*n*n;
+    chips.forEach(c=>c.classList.toggle('on', +c.dataset.n===n));
+    QB.el('wellEn').textContent=En>=0.01?En.toFixed(3):En.toExponential(2);
+    QB.el('wellDE').textContent=(E1*(2*n+1)).toFixed(3);
+    QB.el('wellE1').textContent=E1>=0.01?E1.toFixed(3):E1.toExponential(2);
+    QB.el('wellLam').textContent=(2*a/n).toFixed(2);
+    QB.el('wellNodes').textContent=n-1;
+    QB.el('wellAv').textContent=a.toFixed(2);
+    slideFill(sA);
+  }
+  chips.forEach(c=>c.addEventListener('click',()=>{n=+c.dataset.n;upd();}));
+  sA.addEventListener('input',upd); selM.addEventListener('change',upd);
+  document.querySelectorAll('#well [data-preset]').forEach(b=>b.addEventListener('click',()=>{
+    const d=JSON.parse(b.dataset.preset);
+    sA.value=d.a; selM.value=d.m; n=d.n||1; upd();
+  }));
+  upd();
+
+  const COL=["#53d8ff","#ffb454","#b18cff","#63e6a3","#ff6b7a"];
+  /* 能级图 */
+  QB.anim.add(QB.el('wellLevels'), () => {
+    const {ctx,W,H}=QB.fit(QB.el('wellLevels'));
+    ctx.clearRect(0,0,W,H);
+    const {a,m}=P(); const E1=E1of(a,m);
+    const Es=[1,2,3,4,5].map(k=>E1*k*k);
+    const Emax=Es[4]*1.12;
+    const x0=W*0.16, x1=W*0.86;
+    const Y=e=>H*0.88-(e/Emax)*H*0.78;
+    // 墙
+    ctx.strokeStyle="#8fa3c8"; ctx.lineWidth=2.5;
+    ctx.beginPath(); ctx.moveTo(x0,10); ctx.lineTo(x0,Y(0)); ctx.moveTo(x1,10); ctx.lineTo(x1,Y(0)); ctx.stroke();
+    // 阴线
+    ctx.lineWidth=1; ctx.strokeStyle="rgba(143,163,200,.5)";
+    for(let i=0;i<6;i++){
+      const l=8;
+      ctx.beginPath(); ctx.moveTo(x0, 12+i*9); ctx.lineTo(x0-l, 20+i*9); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x1, 12+i*9); ctx.lineTo(x1+l, 20+i*9); ctx.stroke();
+    }
+    // 底线
+    ctx.strokeStyle="#8fa3c8"; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(x0,Y(0)); ctx.lineTo(x1,Y(0)); ctx.stroke();
+    // 能级
+    ctx.font="12.5px SF Mono,Menlo,monospace";
+    Es.forEach((e,i)=>{
+      const on=(i+1)===n;
+      ctx.strokeStyle=on?COL[i]:"rgba(177,140,255,.45)";
+      ctx.lineWidth=on?3:1.6;
+      if(on){ ctx.shadowColor=COL[i]; ctx.shadowBlur=9; }
+      ctx.beginPath(); ctx.moveTo(x0,Y(e)); ctx.lineTo(x1,Y(e)); ctx.stroke();
+      ctx.shadowBlur=0;
+      ctx.fillStyle=on?COL[i]:"rgba(177,140,255,.6)";
+      ctx.fillText("E"+(i+1)+" = "+(e>=0.01?e.toFixed(3):e.toExponential(1))+" eV", x1+10, Y(e)+4);
+    });
+    // a 标注
+    ctx.fillStyle="rgba(155,176,204,.9)";
+    ctx.fillText("a = "+a.toFixed(2)+" nm（教材用 Å：a=0.5nm 即 5Å）", x0-4, H-8);
+  });
+
+  /* ψ_n 与 |ψ_n|² */
+  QB.anim.add(QB.el('wellPsi'), t => {
+    const {ctx,W,H}=QB.fit(QB.el('wellPsi'));
+    ctx.clearRect(0,0,W,H);
+    const {a}=P();
+    const xm=-0.14*a, xM=1.14*a, span=xM-xm;
+    const X=x=>(x-xm)/span*W;
+    const midY=H*0.52, amp=H*0.36;
+    const phase=n*n*2*Math.PI*0.85*t;
+    // 墙
+    ctx.strokeStyle="#8fa3c8"; ctx.lineWidth=2.5;
+    ctx.beginPath(); ctx.moveTo(X(0),8); ctx.lineTo(X(0),H-8); ctx.moveTo(X(a),8); ctx.lineTo(X(a),H-8); ctx.stroke();
+    ctx.lineWidth=1; ctx.strokeStyle="rgba(143,163,200,.5)";
+    for(let i=0;i<7;i++){
+      ctx.beginPath(); ctx.moveTo(X(0),10+i*9); ctx.lineTo(X(0)-7,18+i*9); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(X(a),10+i*9); ctx.lineTo(X(a)+7,18+i*9); ctx.stroke();
+    }
+    // 中线
+    ctx.strokeStyle="rgba(255,255,255,.14)"; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(X(0),midY); ctx.lineTo(X(a),midY); ctx.stroke();
+    // 包络
+    ctx.setLineDash([5,5]); ctx.strokeStyle="rgba(232,237,248,.4)"; ctx.lineWidth=1.2;
+    [1,-1].forEach(sg=>{
+      ctx.beginPath();
+      for(let i=0;i<=240;i++){
+        const x=xm+i/240*span;
+        const v=Math.max(0,Math.sin(n*Math.PI*Math.min(Math.max(x,0),a)/a))*sg;
+        const y=midY-v*amp;
+        i?ctx.lineTo(X(x),y):ctx.moveTo(X(x),y);
+      }
+      ctx.stroke();
+    });
+    ctx.setLineDash([]);
+    // ψ
+    const c=COL[n-1]||"#53d8ff";
+    ctx.beginPath();
+    for(let i=0;i<=500;i++){
+      const x=xm+i/500*span;
+      const xx=Math.min(Math.max(x,0),a);
+      const v=xx===x?Math.sin(n*Math.PI*xx/a)*Math.cos(phase):0;
+      const y=midY-v*amp;
+      i?ctx.lineTo(X(x),y):ctx.moveTo(X(x),y);
+    }
+    ctx.strokeStyle=c; ctx.lineWidth=2; ctx.shadowColor=c; ctx.shadowBlur=8; ctx.stroke(); ctx.shadowBlur=0;
+    // 节点
+    ctx.setLineDash([3,5]); ctx.strokeStyle="rgba(255,180,84,.55)";
+    for(let k=1;k<n;k++){
+      const x=a*k/n;
+      ctx.beginPath(); ctx.moveTo(X(x),10); ctx.lineTo(X(x),H-10); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+  });
+
+  QB.anim.add(QB.el('wellProb'), () => {
+    const {ctx,W,H}=QB.fit(QB.el('wellProb'));
+    ctx.clearRect(0,0,W,H);
+    const {a}=P();
+    const xm=-0.14*a, xM=1.14*a, span=xM-xm;
+    const X=x=>(x-xm)/span*W;
+    const base=H*0.86, amp=H*0.68;
+    ctx.strokeStyle="#8fa3c8"; ctx.lineWidth=2.5;
+    ctx.beginPath(); ctx.moveTo(X(0),8); ctx.lineTo(X(0),H-6); ctx.moveTo(X(a),8); ctx.lineTo(X(a),H-6); ctx.stroke();
+    ctx.strokeStyle="rgba(255,255,255,.14)"; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(X(0),base); ctx.lineTo(X(a),base); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(X(0),base);
+    for(let i=0;i<=400;i++){
+      const x=xm+i/400*span;
+      const xx=Math.min(Math.max(x,0),a);
+      const v=xx===x?Math.pow(Math.sin(n*Math.PI*xx/a),2):0;
+      ctx.lineTo(X(x),base-v*amp);
+    }
+    ctx.lineTo(X(a),base); ctx.closePath();
+    ctx.fillStyle="rgba(255,180,84,.22)"; ctx.fill();
+    ctx.beginPath();
+    for(let i=0;i<=400;i++){
+      const x=xm+i/400*span;
+      const xx=Math.min(Math.max(x,0),a);
+      const v=xx===x?Math.pow(Math.sin(n*Math.PI*xx/a),2):0;
+      const y=base-v*amp;
+      i?ctx.lineTo(X(x),y):ctx.moveTo(X(x),y);
+    }
+    ctx.strokeStyle="#ffb454"; ctx.lineWidth=1.8; ctx.stroke();
+    ctx.fillStyle="rgba(232,237,248,.8)"; ctx.font="12px -apple-system,PingFang SC,sans-serif";
+    ctx.fillText("|ψ"+(n?"ₙ":"")+"|²：在节点处找到电子的概率恒为 0", 12, 20);
+  });
+})();
+
+/* ============================================================
+   实验台②：阶跃势
+   ============================================================ */
+(() => {
+  const sE=QB.el('stepE'), sV=QB.el('stepV'), selM=QB.el('stepMass'), sG=QB.el('stepGain');
+  const regions=[{x0:-1e3,x1:0,V:0},{x0:0,x1:1e3,V:0}];
+  let lastKey="", lastQ=null;
+  function P(){ return { E:+sE.value, V0:+sV.value, m:+selM.value, g:+sG.value }; }
+  function slideFill(r){ const p=(r.value-r.min)/(r.max-r.min)*100; r.style.setProperty('--p',p+"%"); }
+  function updOut(q){
+    const {E,V0,m,g}=P();
+    const above=E>V0;
+    const kc=QB.el('stepCase');
+    kc.textContent = above ? "E > V₀ · 部分反射 + 部分透射" : "E < V₀ · 全反射，但会渗入禁区";
+    kc.classList.toggle('bad', !above);
+    QB.el('stepR').innerHTML=(q.R*100).toFixed(1)+"%";
+    QB.el('stepRb').style.width=(q.R*100)+"%";
+    if(above){
+      QB.el('stepT').innerHTML=(q.T*100).toFixed(1)+"%";
+      QB.el('stepTb').style.width=(q.T*100)+"%";
+      QB.el('stepD').textContent="—";
+      QB.el('stepK2').textContent="k₂ = "+q.kArr[1][0].toFixed(2)+" nm⁻¹（振荡波）";
+    }else{
+      QB.el('stepT').innerHTML="0<small>（无净透射流）</small>";
+      QB.el('stepTb').style.width="0%";
+      const kap=q.kArr[1][1];
+      QB.el('stepD').textContent="d = "+(1/kap).toFixed(2)+" nm";
+      QB.el('stepK2').textContent="k₂ = i·"+kap.toFixed(2)+" nm⁻¹（衰减）";
+    }
+    QB.el('stepEv').textContent=E.toFixed(2);
+    QB.el('stepVv').textContent=V0.toFixed(2);
+    QB.el('stepGv').textContent=Math.pow(10,g)>=1000?Math.pow(10,g).toExponential(0):Math.pow(10,g).toFixed(Math.pow(10,g)<10?0:1);
+  }
+  function getQ(){
+    const {E,V0,m}=P();
+    const key=E+"|"+V0+"|"+m;
+    if(key!==lastKey){ regions[1].V=V0; lastQ=QB.solveTISE(regions,E,m); lastKey=key; }
+    return lastQ;
+  }
+  [sE,sV,sG].forEach(r=>r.addEventListener('input',()=>{lastKey="";slideFill(r);}));
+  selM.addEventListener('change',()=>{lastKey="";});
+  document.querySelectorAll('#step [data-preset]').forEach(b=>b.addEventListener('click',()=>{
+    const d=JSON.parse(b.dataset.preset);
+    sE.value=d.E; sV.value=d.V0; selM.value=d.m;
+    [sE,sV].forEach(slideFill); lastKey="";
+  }));
+  slideFill(sE); slideFill(sV); slideFill(sG);
+
+  QB.anim.add(QB.el('stepCv'), t => {
+    const {ctx,W,H}=QB.fit(QB.el('stepCv'));
+    ctx.clearRect(0,0,W,H);
+    const {E,V0,g}=P();
+    const q=getQ();
+    const xMin=-6,xMax=16,span=xMax-xMin;
+    const X=x=>(x-xMin)/span*W;
+    const Vmax=Math.max(V0,E)*1.35;
+    const Yv=v=>H*0.82-(v/Vmax)*H*0.56;
+    const midY=H*0.48, amp=H*0.30;
+    const gain=Math.pow(10,g);
+    const norm=1/((1+Math.sqrt(q.R))*Math.sqrt(QB.pabs2(q.co[0].A)));
+    /* 经典禁区 */
+    if(E<V0){
+      ctx.fillStyle="rgba(255,107,122,.07)";
+      ctx.fillRect(X(0),0,W-X(0),H);
+      ctx.fillStyle="rgba(255,107,122,.75)";
+      ctx.font="12px -apple-system,PingFang SC,sans-serif";
+      ctx.fillText("经典禁区（E < V₀）：经典粒子禁止入内", X(0)+10, 22);
+    }
+    /* 势能 */
+    ctx.strokeStyle="#8fa3c8"; ctx.lineWidth=2.5;
+    ctx.beginPath();
+    ctx.moveTo(X(xMin),Yv(0)); ctx.lineTo(X(0),Yv(0));
+    ctx.lineTo(X(0),Yv(V0)); ctx.lineTo(X(xMax),Yv(V0)); ctx.stroke();
+    ctx.fillStyle="rgba(155,176,204,.9)"; ctx.font="12.5px -apple-system,PingFang SC,sans-serif";
+    ctx.fillText("V₀ = "+V0.toFixed(2)+" eV", X(0)+8, Yv(V0)-8);
+    ctx.fillText("V = 0", X(xMin)+8, Yv(0)+16);
+    /* E 线 */
+    ctx.setLineDash([6,5]); ctx.strokeStyle="#53d8ff"; ctx.lineWidth=1.4;
+    ctx.beginPath(); ctx.moveTo(X(xMin),Yv(E)); ctx.lineTo(X(xMax),Yv(E)); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle="#53d8ff";
+    ctx.fillText("E = "+E.toFixed(2)+" eV", X(xMin)+8, Yv(E)-8);
+    /* 波函数 */
+    const wt=2*Math.PI*1.15*t;
+    ctx.beginPath();
+    for(let i=0;i<=760;i++){
+      const x=xMin+i/760*span;
+      const c=q.psiAt(x);
+      let s=(c[0]*Math.cos(wt)+c[1]*Math.sin(wt))*norm*gain;
+      s=Math.max(-1.5,Math.min(1.5,s));
+      const y=midY-s*amp;
+      i?ctx.lineTo(X(x),y):ctx.moveTo(X(x),y);
+    }
+    ctx.strokeStyle="#53d8ff"; ctx.lineWidth=1.9;
+    ctx.shadowColor="rgba(83,216,255,.65)"; ctx.shadowBlur=8; ctx.stroke(); ctx.shadowBlur=0;
+    /* 振幅标注 */
+    ctx.font="12px -apple-system,PingFang SC,sans-serif";
+    const rAmp=Math.sqrt(q.R);
+    ctx.fillStyle="rgba(99,230,163,.95)";
+    ctx.fillText("|入射| = 1", X(-5.4), midY-amp*1.12);
+    ctx.fillStyle="rgba(255,107,122,.95)";
+    ctx.fillText("|反射| = √R = "+rAmp.toFixed(2), X(-3.6), midY+amp*1.12);
+    ctx.fillStyle="rgba(255,180,84,.95)";
+    if(E>V0){
+      ctx.fillText("|透射| = √T = "+Math.sqrt(q.T).toFixed(2)+"（已按 1/(1+√R) 归一）", X(0.4), midY-amp*0.9);
+    }else{
+      ctx.fillText("ψ₂ = A₂·e^(−k₂x)：指数渗透后被完全弹回", X(0.4), midY-amp*0.9);
+    }
+    /* 穿透深度 */
+    if(E<V0){
+      const d=1/q.kArr[1][1];
+      if(d<xMax){
+        ctx.setLineDash([4,4]); ctx.strokeStyle="rgba(255,180,84,.85)"; ctx.lineWidth=1.4;
+        ctx.beginPath(); ctx.moveTo(X(d),24); ctx.lineTo(X(d),H*0.82); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle="rgba(255,180,84,.95)";
+        ctx.fillText("穿透深度 d = 1/k₂ = "+d.toFixed(2)+" nm", X(d)+6, 40);
+      }
+    }
+  });
+
+  /* 读数节流更新（参数变化时才写 DOM） */
+  QB.anim.add(QB.el('stepCv'), () => {});
+  setInterval(()=>{ try{ updOut(getQ()); }catch(e){} }, 120);
+})();
+
+/* ============================================================
+   实验台③：势垒隧穿（单/双势垒 + T-E 曲线）
+   ============================================================ */
+(() => {
+  const sE=QB.el('barE'), sV=QB.el('barV'), sA=QB.el('barA'), sW=QB.el('barW'),
+        sG=QB.el('barGain'), selM=QB.el('barMass');
+  const bSingle=QB.el('modeSingle'), bDouble=QB.el('modeDouble');
+  let mode="single";
+  let lastKey="", lastQ=null, curve=null, curveKey="";
+  function P(){ return { E:+sE.value, V0:+sV.value, a:+sA.value, w:+sW.value, m:+selM.value, g:+sG.value }; }
+  function slideFill(r){ const p=(r.value-r.min)/(r.max-r.min)*100; r.style.setProperty('--p',p+"%"); }
+  function setMode(mo){
+    mode=mo;
+    bSingle.classList.toggle('on',mo==="single");
+    bDouble.classList.toggle('on',mo==="double");
+    QB.el('barWCtl').style.display = mo==="double"?"":"none";
+    QB.el('barRes').style.display = "none";
+    lastKey=""; curveKey="";
+  }
+  bSingle.addEventListener('click',()=>setMode("single"));
+  bDouble.addEventListener('click',()=>setMode("double"));
+  function regionsOf(p){
+    if(mode==="single")
+      return [{x0:-1e3,x1:0,V:0},{x0:0,x1:p.a,V:p.V0},{x0:p.a,x1:1e3,V:0}];
+    return [
+      {x0:-1e3,x1:0,V:0},{x0:0,x1:p.a,V:p.V0},{x0:p.a,x1:p.a+p.w,V:0},
+      {x0:p.a+p.w,x1:p.a+p.w+p.a,V:p.V0},{x0:p.a+p.w+p.a,x1:1e3,V:0}
+    ];
+  }
+  function getQ(){
+    const p=P();
+    const key=[p.E,p.V0,p.a,p.w,p.m,mode].join("|");
+    if(key!==lastKey){ lastQ=QB.solveTISE(regionsOf(p),p.E,p.m); lastKey=key; }
+    return lastQ;
+  }
+  function getCurve(){
+    const p=P();
+    const key=[p.V0,p.a,p.w,p.m,mode].join("|");
+    if(key!==curveKey){
+      const Emax=Math.max(3,p.V0*1.3);
+      const pts=[];
+      for(let i=0;i<=900;i++){
+        const E=0.03+i/900*(Emax-0.03);
+        const q=QB.solveTISE(regionsOf({...p,E}),E,p.m);
+        pts.push([E,q.T]);
+      }
+      curve={pts,Emax}; curveKey=key;
+    }
+    return curve;
+  }
+  function updOut(){
+    const p=P(); const q=getQ();
+    QB.el('barEv').textContent=p.E.toFixed(2);
+    QB.el('barVv').textContent=p.V0.toFixed(1);
+    QB.el('barAv').textContent=p.a.toFixed(2);
+    QB.el('barWv').textContent=p.w.toFixed(1);
+    const gv=Math.pow(10,p.g);
+    QB.el('barGv').textContent=gv>=1000?gv.toExponential(0):gv.toFixed(gv<10?0:1);
+    QB.el('barT').innerHTML=QB.fmtT(q.T);
+    const above=p.E>p.V0;
+    if(above){
+      QB.el('barTapprox').innerHTML="E&gt;V₀ 不适用";
+      QB.el('barK2').textContent="k₂ = "+q.kArr[1][0].toFixed(2);
+      QB.el('barExp').textContent="—（振荡穿透）";
+    }else{
+      const kap=q.kArr[1][1];
+      QB.el('barK2').textContent="k₂ = "+kap.toFixed(2);
+      const approx=16*(p.E/p.V0)*(1-p.E/p.V0)*Math.exp(-2*kap*p.a);
+      QB.el('barTapprox').innerHTML=QB.sciHTML(approx);
+      QB.el('barExp').innerHTML=QB.sciHTML(Math.exp(-2*kap*p.a));
+    }
+    const res=QB.el('barRes');
+    if(mode==="double" && q.T>0.7){ res.style.display=""; } else { res.style.display="none"; }
+  }
+  [sE,sV,sA,sW,sG].forEach(r=>r.addEventListener('input',()=>{slideFill(r);}));
+  selM.addEventListener('change',()=>{});
+  document.querySelectorAll('#barrier [data-preset]').forEach(b=>b.addEventListener('click',()=>{
+    const d=JSON.parse(b.dataset.preset);
+    setMode(d.mode||"single");
+    sE.value=d.E; sV.value=d.V0; sA.value=d.a; if(d.w!==undefined)sW.value=d.w; selM.value=d.m;
+    [sE,sV,sA,sW,sG].forEach(slideFill);
+    lastKey=""; curveKey="";
+  }));
+  [sE,sV,sA,sW,sG].forEach(slideFill);
+
+  /* ψ 画布 */
+  QB.anim.add(QB.el('barrierPsi'), t => {
+    const {ctx,W,H}=QB.fit(QB.el('barrierPsi'));
+    ctx.clearRect(0,0,W,H);
+    const p=P(); const q=getQ();
+    const xMin=-5,xMax=p.a+p.w+p.a+5,span=xMax-xMin;
+    const X=x=>(x-xMin)/span*W;
+    const Vmax=Math.max(p.V0,p.E)*1.35;
+    const Yv=v=>H*0.84-(v/Vmax)*H*0.5;
+    const midY=H*0.44, amp=H*0.27;
+    const gain=Math.pow(10,p.g);
+    const norm=1/((1+Math.sqrt(q.R))*Math.sqrt(QB.pabs2(q.co[0].A)));
+    const above=p.E>p.V0;
+    /* 势垒区填色 */
+    ctx.fillStyle="rgba(255,107,122,.10)";
+    if(mode==="single"){
+      ctx.fillRect(X(0),0,X(p.a)-X(0),H);
+    }else{
+      ctx.fillRect(X(0),0,X(p.a)-X(0),H);
+      ctx.fillRect(X(p.a+p.w),0,X(p.a+p.w+p.a)-X(p.a+p.w),H);
+    }
+    /* 势能线 */
+    ctx.strokeStyle="#8fa3c8"; ctx.lineWidth=2.5;
+    ctx.beginPath();
+    ctx.moveTo(X(xMin),Yv(0));
+    if(mode==="single"){
+      ctx.lineTo(X(0),Yv(0)); ctx.lineTo(X(0),Yv(p.V0)); ctx.lineTo(X(p.a),Yv(p.V0)); ctx.lineTo(X(p.a),Yv(0)); ctx.lineTo(X(xMax),Yv(0));
+    }else{
+      const x1=p.a, x2=p.a+p.w, x3=p.a+p.w+p.a;
+      ctx.lineTo(X(0),Yv(0)); ctx.lineTo(X(0),Yv(p.V0)); ctx.lineTo(X(x1),Yv(p.V0)); ctx.lineTo(X(x1),Yv(0));
+      ctx.lineTo(X(x2),Yv(0)); ctx.lineTo(X(x2),Yv(p.V0)); ctx.lineTo(X(x3),Yv(p.V0)); ctx.lineTo(X(x3),Yv(0)); ctx.lineTo(X(xMax),Yv(0));
+    }
+    ctx.stroke();
+    ctx.fillStyle="rgba(155,176,204,.95)"; ctx.font="12.5px -apple-system,PingFang SC,sans-serif";
+    ctx.fillText("V₀ = "+p.V0.toFixed(1)+" eV", X(0)+6, Yv(p.V0)-7);
+    if(mode==="double") ctx.fillText("阱内准束缚态 → 共振峰", X(p.a)+6, Yv(0)-7);
+    /* E 线 */
+    ctx.setLineDash([6,5]); ctx.strokeStyle="#53d8ff"; ctx.lineWidth=1.4;
+    ctx.beginPath(); ctx.moveTo(X(xMin),Yv(p.E)); ctx.lineTo(X(xMax),Yv(p.E)); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle="#53d8ff";
+    ctx.fillText("E = "+p.E.toFixed(2)+" eV"+(above?"（> V₀）":"（< V₀）"), X(xMin)+8, Yv(p.E)-8);
+    /* 波函数 */
+    const wt=2*Math.PI*1.15*t;
+    ctx.beginPath();
+    for(let i=0;i<=800;i++){
+      const x=xMin+i/800*span;
+      const c=q.psiAt(x);
+      let s=(c[0]*Math.cos(wt)+c[1]*Math.sin(wt))*norm*gain;
+      s=Math.max(-1.5,Math.min(1.5,s));
+      const y=midY-s*amp;
+      i?ctx.lineTo(X(x),y):ctx.moveTo(X(x),y);
+    }
+    ctx.strokeStyle="#53d8ff"; ctx.lineWidth=1.9;
+    ctx.shadowColor="rgba(83,216,255,.65)"; ctx.shadowBlur=8; ctx.stroke(); ctx.shadowBlur=0;
+    /* 标注 */
+    ctx.font="12px -apple-system,PingFang SC,sans-serif";
+    ctx.fillStyle="rgba(99,230,163,.95)";
+    ctx.fillText("|入射| = 1", X(xMin+0.4), midY-amp*1.12);
+    ctx.fillStyle="rgba(255,107,122,.95)";
+    ctx.fillText("|反射| = √R = "+Math.sqrt(q.R).toFixed(2), X(xMin+1.6), midY+amp*1.12);
+    ctx.fillStyle="rgba(255,180,84,.95)";
+    if(!above){
+      ctx.fillText("墙内：e^(−k₂x) 指数衰减", X(Math.max(0.1,p.a*0.3)), midY-amp*(gain>1?0.6:0.95));
+    }
+    const xT=mode==="single"?p.a:p.a+p.w+p.a;
+    if(X(xT)+8<W-150){
+      ctx.fillText("墙后 |透射| = √T = "+(q.T>0?Math.sqrt(q.T).toExponential(1):"0"), X(xT)+8, midY-amp*0.75);
+    }
+  });
+
+  /* T-E 曲线 */
+  QB.anim.add(QB.el('barrierTE'), () => {
+    const {ctx,W,H}=QB.fit(QB.el('barrierTE'));
+    ctx.clearRect(0,0,W,H);
+    const p=P(); const cv=getCurve(); const q=getQ();
+    const mL=54,mR=16,mT=14,mB=30;
+    const pw=W-mL-mR, ph=H-mT-mB;
+    const Emax=cv.Emax;
+    const X=e=>mL+(e/Emax)*pw;
+    const Y=lT=>mT+(-lT/12)*ph;   // log10 T ∈ [-12,0]
+    /* 网格 */
+    ctx.strokeStyle="rgba(255,255,255,.08)"; ctx.lineWidth=1;
+    ctx.font="11px SF Mono,Menlo,monospace";
+    for(let d=0;d<=12;d+=3){
+      const y=Y(-d);
+      ctx.beginPath(); ctx.moveTo(mL,y); ctx.lineTo(W-mR,y); ctx.stroke();
+      ctx.fillStyle="rgba(155,176,204,.8)";
+      ctx.fillText(d===0?"1":"10⁻"+d, mL-30, y+4);
+    }
+    /* V0 标线 */
+    if(p.V0<Emax){
+      ctx.setLineDash([5,4]); ctx.strokeStyle="rgba(143,163,200,.6)";
+      ctx.beginPath(); ctx.moveTo(X(p.V0),mT); ctx.lineTo(X(p.V0),mT+ph); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle="rgba(143,163,200,.9)";
+      ctx.fillText("V₀", X(p.V0)+5, mT+12);
+    }
+    /* 曲线 */
+    ctx.beginPath();
+    let started=false;
+    for(const [e,tt] of cv.pts){
+      const lT=Math.log10(Math.max(tt,1e-13));
+      if(lT<-12.2){ started=false; continue; }
+      const y=Y(Math.max(lT,-12));
+      if(!started){ ctx.moveTo(X(e),y); started=true; } else ctx.lineTo(X(e),y);
+    }
+    ctx.strokeStyle="#ffb454"; ctx.lineWidth=2;
+    ctx.shadowColor="rgba(255,180,84,.5)"; ctx.shadowBlur=6; ctx.stroke(); ctx.shadowBlur=0;
+    /* 当前工作点 */
+    const lT=Math.log10(Math.max(q.T,1e-13));
+    const yq=Y(Math.max(Math.min(lT,0),-12));
+    ctx.setLineDash([3,4]); ctx.strokeStyle="rgba(83,216,255,.7)";
+    ctx.beginPath(); ctx.moveTo(X(p.E),mT+ph); ctx.lineTo(X(p.E),yq); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(X(p.E),yq,4.5,0,7); ctx.fill();
+    ctx.strokeStyle="#53d8ff"; ctx.lineWidth=2; ctx.stroke();
+    /* 轴标签 */
+    ctx.fillStyle="rgba(155,176,204,.9)";
+    ctx.fillText("E (eV) →", W-mR-52, H-8);
+    ctx.fillText("T（对数）", 10, mT+8);
+  });
+
+  setInterval(()=>{ try{ updOut(); }catch(e){} }, 120);
+  updOut();
+})();
+
+/* ============================================================
+   实验台④：Kronig–Penney 周期势 → 能带（教材式 3.22–3.30）
+   ============================================================ */
+(() => {
+  const sP=QB.el('kpP'), sA=QB.el('kpA'), selM=QB.el('kpMass');
+  const E1of=(a,m)=>Math.PI*Math.PI*QB.HBAR*QB.HBAR/(2*m*QB.ME*Math.pow(a*1e-9,2))/QB.QE;
+  const fx=(x,Pp)=> Pp*Math.sin(x)/x + Math.cos(x);   // x = αa
+  function P(){ return { P:+sP.value, a:+sA.value, m:+selM.value }; }
+  function slideFill(r){ const p=(r.value-r.min)/(r.max-r.min)*100; r.style.setProperty('--p',p+"%"); }
+
+  /* 允许带求解：对每个 ka∈[0,π] 解 f(αa)=cos(ka)，按段(π 区间)归入各条带 */
+  let lastKey="", cache=null;
+  function getBands(){
+    const {P:Pp,a,m}=P();
+    const key=[Pp,a,m].join("|");
+    if(key===lastKey) return cache;
+    const NK=96, XMAX=4*Math.PI, NX=2600;
+    const curves=[[],[],[],[]];               // curves[i] = 第 i+1 条带的 (ka, E/E₁) 点列
+    for(let i=0;i<=NK;i++){
+      const ka=i/NK*Math.PI, ck=Math.cos(ka);
+      let xPrev=0.02, gPrev=fx(xPrev,Pp)-ck;
+      for(let j=1;j<=NX;j++){
+        const x=0.02+j/NX*(XMAX-0.02);
+        const g=fx(x,Pp)-ck;
+        if(gPrev*g<0){
+          let lo=xPrev, hi=x;
+          for(let it=0;it<48;it++){
+            const mid=(lo+hi)/2;
+            if((fx(mid,Pp)-ck)*(fx(lo,Pp)-ck)<=0) hi=mid; else lo=mid;
+          }
+          const xr=(lo+hi)/2;
+          let bi=Math.floor(xr/Math.PI);
+          /* 切点恰在 αa=nπ 时归入下方带（带边锚定 n²E₁ 属于下一条带的顶） */
+          if(bi>0 && Math.abs(xr-Math.round(xr/Math.PI)*Math.PI)<1e-6) bi=bi-1;
+          if(bi<4) curves[bi].push([ka, Math.pow(xr/Math.PI,2)]);
+        }
+        xPrev=x; gPrev=g;
+      }
+    }
+    cache={curves, E1:E1of(a,m)};
+    lastKey=key;
+    return cache;
+  }
+  function updOut(){
+    const {P:Pp,a,m}=P();
+    slideFill(sP); slideFill(sA);
+    QB.el('kpPv').textContent="P′ = "+Pp.toFixed(1);
+    QB.el('kpAv').textContent=a.toFixed(2);
+    const E1=E1of(a,m);
+    QB.el('kpE1').textContent=E1>=0.01?E1.toFixed(3):E1.toExponential(2);
+    const {curves}=getBands();
+    const ext=c=>{
+      if(!c.length) return null;
+      let lo=1e9, hi=-1e9;
+      for(const [,e] of c){ lo=Math.min(lo,e); hi=Math.max(hi,e); }
+      return [lo,hi];
+    };
+    const b1=ext(curves[0]), b2=ext(curves[1]);
+    if(b1){
+      QB.el('kpB1').innerHTML=b1[0].toFixed(2)+" – "+b1[1].toFixed(2)+" E₁ <small>（"+(b1[0]*E1).toFixed(2)+" – "+(b1[1]*E1).toFixed(2)+" eV）</small>";
+    }
+    if(b1&&b2){
+      const eg=(b2[0]-b1[1])*E1;
+      QB.el('kpG12').innerHTML=(b2[0]-b1[1]).toFixed(2)+" E₁ <small>＝ "+(eg>=0.01?eg.toFixed(3):eg.toExponential(2))+" eV</small>";
+    } else QB.el('kpG12').textContent="—";
+  }
+  [sP,sA].forEach(r=>r.addEventListener('input',updOut));
+  selM.addEventListener('change',updOut);
+  document.querySelectorAll('#kp [data-preset]').forEach(b=>b.addEventListener('click',()=>{
+    const d=JSON.parse(b.dataset.preset);
+    sP.value=d.P; updOut();
+  }));
+  updOut();
+
+  /* 画布 A：f(αa) 曲线 + 允许/禁带着色（教材图 3.8c） */
+  QB.anim.add(QB.el('kpF'), () => {
+    const {ctx,W,H}=QB.fit(QB.el('kpF'));
+    ctx.clearRect(0,0,W,H);
+    const {P:Pp}=P();
+    const mL=44,mR=14,mT=12,mB=40;
+    const pw=W-mL-mR, ph=H-mT-mB;
+    const XMAX=4*Math.PI, YMAX=4;
+    const X=x=>mL+x/XMAX*pw;
+    const Y=v=>mT+(1-(v+YMAX)/(2*YMAX))*ph;
+    /* 允许/禁带竖带着色 */
+    const NS=1400;
+    let inAllow=fx(0.02,Pp)<=1&&fx(0.02,Pp)>=-1;
+    let segStart=0.02;
+    const flush=(x0,x1,allow)=>{
+      ctx.fillStyle=allow?"rgba(99,230,163,.16)":"rgba(255,107,122,.10)";
+      ctx.fillRect(X(x0),mT,Math.max(0,X(x1)-X(x0)),ph);
+    };
+    for(let i=1;i<=NS;i++){
+      const x=0.02+i/NS*(XMAX-0.02);
+      const f=fx(x,Pp), allow=(f<=1&&f>=-1);
+      if(allow!==inAllow){ flush(segStart,x,inAllow); segStart=x; inAllow=allow; }
+    }
+    flush(segStart,XMAX,inAllow);
+    /* ±1 参考线 */
+    ctx.setLineDash([6,5]); ctx.strokeStyle="rgba(232,237,248,.5)"; ctx.lineWidth=1.2;
+    [1,-1].forEach(v=>{ ctx.beginPath(); ctx.moveTo(mL,Y(v)); ctx.lineTo(W-mR,Y(v)); ctx.stroke(); });
+    ctx.setLineDash([]);
+    /* 零线 */
+    ctx.strokeStyle="rgba(255,255,255,.10)";
+    ctx.beginPath(); ctx.moveTo(mL,Y(0)); ctx.lineTo(W-mR,Y(0)); ctx.stroke();
+    /* 曲线（裁剪到视野） */
+    ctx.save();
+    ctx.beginPath(); ctx.rect(mL,mT,pw,ph); ctx.clip();
+    ctx.beginPath();
+    for(let i=0;i<=900;i++){
+      const x=0.02+i/900*(XMAX-0.02);
+      const v=Math.max(-YMAX,Math.min(YMAX,fx(x,Pp)));
+      const y=Y(v);
+      i?ctx.lineTo(X(x),y):ctx.moveTo(X(x),y);
+    }
+    ctx.strokeStyle="#b18cff"; ctx.lineWidth=2.1;
+    ctx.shadowColor="rgba(177,140,255,.55)"; ctx.shadowBlur=7; ctx.stroke(); ctx.shadowBlur=0;
+    ctx.restore();
+    /* 标注 */
+    ctx.font="12px -apple-system,PingFang SC,sans-serif";
+    ctx.fillStyle="rgba(99,230,163,.95)";
+    ctx.fillText("允许带 |f|≤1", X(2.8), Y(1)-6);
+    ctx.fillStyle="rgba(255,107,122,.9)";
+    ctx.fillText("禁带", X(4.1), Y(-1)+16);
+    /* 轴 */
+    ctx.strokeStyle="rgba(255,255,255,.25)"; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(mL,mT+ph); ctx.lineTo(W-mR,mT+ph); ctx.stroke();
+    ctx.fillStyle="rgba(155,176,204,.9)";
+    ctx.font="11.5px SF Mono,Menlo,monospace";
+    for(let n=1;n<=4;n++){
+      const x=n*Math.PI;
+      ctx.setLineDash([3,4]); ctx.strokeStyle="rgba(177,140,255,.35)";
+      ctx.beginPath(); ctx.moveTo(X(x),mT); ctx.lineTo(X(x),mT+ph); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillText((n===1?"π":n+"π"), X(x)-6, mT+ph+14);
+      ctx.fillStyle="rgba(255,180,84,.85)";
+      ctx.fillText("E="+Math.pow(n,2)+"E₁", X(x)-18, mT+ph+28);
+      ctx.fillStyle="rgba(155,176,204,.9)";
+    }
+    ctx.fillText("αa →", W-mR-34, mT+ph+28);
+    ctx.fillStyle="rgba(232,237,248,.85)";
+    ctx.fillText("+1", mL-22, Y(1)+4);
+    ctx.fillText("−1", mL-22, Y(-1)+4);
+    ctx.fillText("f(αa)", mL-36, mT+10);
+  });
+
+  /* 画布 B：还原 E–k 能带图 */
+  QB.anim.add(QB.el('kpEk'), () => {
+    const {ctx,W,H}=QB.fit(QB.el('kpEk'));
+    ctx.clearRect(0,0,W,H);
+    const {curves,E1}=getBands();
+    const mL=52,mR=14,mT=14,mB=34;
+    const pw=W-mL-mR, ph=H-mT-mB;
+    const EmaxEv=9.6*E1;
+    const Y=E=>mT+(1-E/EmaxEv)*ph;
+    const X=ka=>mL+(ka/Math.PI+1)/2*pw;
+    /* 孤立阱能级虚线 */
+    ctx.setLineDash([5,5]); ctx.font="11px SF Mono,Menlo,monospace";
+    [[1,"E₁"],[4,"4E₁"],[9,"9E₁"]].forEach(([n,lab])=>{
+      const y=Y(n*E1);
+      ctx.strokeStyle="rgba(255,180,84,.45)";
+      ctx.beginPath(); ctx.moveTo(mL,y); ctx.lineTo(W-mR,y); ctx.stroke();
+      ctx.fillStyle="rgba(255,180,84,.8)";
+      ctx.fillText(lab+" ("+(n*E1).toFixed(2)+"eV)", W-mR-88, y-4);
+    });
+    /* 自由电子折叠抛物线（P′→0） */
+    ctx.strokeStyle="rgba(232,237,248,.32)"; ctx.lineWidth=1.3;
+    ctx.beginPath();
+    for(let i=0;i<=60;i++){
+      const ka=-Math.PI+i/60*Math.PI;
+      const E=E1*Math.pow(Math.abs(ka)/Math.PI,2);
+      i?ctx.lineTo(X(ka),Y(E)):ctx.moveTo(X(ka),Y(E));
+    }
+    ctx.stroke();
+    ctx.beginPath();
+    for(let i=0;i<=60;i++){
+      const ka=-Math.PI+i/60*Math.PI;
+      const E=E1*Math.pow((2*Math.PI-Math.abs(ka))/Math.PI,2);
+      i?ctx.lineTo(X(ka),Y(E)):ctx.moveTo(X(ka),Y(E));
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+    /* 能带曲线 */
+    const BC=["#53d8ff","#ffb454","#b18cff","#63e6a3"];
+    curves.forEach((c,i)=>{
+      if(c.length<2||i>3) return;
+      ctx.strokeStyle=BC[i]; ctx.lineWidth=2.2;
+      ctx.shadowColor=BC[i]; ctx.shadowBlur=6;
+      ctx.beginPath();
+      c.forEach(([ka,e],j)=>{
+        const E=e*E1;
+        if(j===0) ctx.moveTo(X(ka),Y(E)); else ctx.lineTo(X(ka),Y(E));
+      });
+      ctx.stroke();
+      ctx.beginPath();
+      c.forEach(([ka,e],j)=>{
+        const E=e*E1;
+        if(j===0) ctx.moveTo(X(-ka),Y(E)); else ctx.lineTo(X(-ka),Y(E));
+      });
+      ctx.stroke();
+      ctx.shadowBlur=0;
+    });
+    /* 轴 */
+    ctx.strokeStyle="rgba(255,255,255,.25)";
+    ctx.beginPath(); ctx.moveTo(mL,mT+ph); ctx.lineTo(W-mR,mT+ph); ctx.stroke();
+    ctx.font="11.5px SF Mono,Menlo,monospace";
+    ctx.fillStyle="rgba(155,176,204,.9)";
+    ctx.fillText("−π/a", mL-6, mT+ph+16);
+    ctx.fillText("0", X(0)-3, mT+ph+16);
+    ctx.fillText("+π/a", W-mR-34, mT+ph+16);
+    ctx.fillText("ka", W-mR-14, mT+10);
+    ctx.fillStyle="rgba(232,237,248,.85)";
+    ctx.fillText("E (eV)", mL-42, mT+8);
+    ctx.fillStyle="rgba(155,176,204,.8)";
+    [2,4,6,8].forEach(n=>{
+      ctx.fillText((n*E1).toFixed(1), mL-40, Y(n*E1)+4);
+    });
+  });
+})();
+
+/* ============================================================
+   挑战测验
+   ============================================================ */
+(() => {
+  const QS=[
+    { q:"无限深势阱的宽度从 a 增大到 2a，基态能量 E₁ 变为原来的多少？",
+      o:["不变","1/2","1/4","4 倍"], a:2,
+      w:"E₁ = ħ²π²/2ma² ∝ 1/a²：宽度翻倍 → E₁ 变为 1/4。限制越松，能量越低、能级越密——这就是量子约束效应的核心公式（教材式 2.38）。" },
+    { q:"能量 E < V₀ 的电子打在阶跃势上，量子力学预言它最终会怎样？",
+      o:["一部分穿过台阶一去不返","全部被弹回，但波函数渗入台阶一段距离后衰减消失","像经典粒子一样精确停在台阶面上","在台阶前震荡不前"], a:1,
+      w:"R=1（教材式 2.59）：概率流上全部被弹回；但 ψ₂=A₂e^(−k₂x) 在禁区内不为零（教材式 2.46），存在穿透深度 d=1/k₂——'全反射但仍会渗入'是量子和经典的分界线。" },
+    { q:"其他条件不变，把势垒宽度从 a 加倍到 2a，隧穿概率 T 大约如何变化？",
+      o:["不变","减半","平方（指数式暴跌）","翻倍"], a:2,
+      w:"T ∝ e^(−2k₂a)（教材式 2.63）：a 加倍 → T 取平方，直接掉几个数量级。隧穿对宽度和高度都是指数敏感，这是 STM 与闪存设计的物理基础。" },
+    { q:"下列哪种器件的工作原理直接利用了量子隧穿？",
+      o:["发光二极管 LED","普通硅整流二极管","扫描隧道显微镜 STM","电阻器"], a:2,
+      w:"STM 通过探针-样品间的真空势垒隧穿电流成像，电流对间隙指数敏感（0.1 nm → 数倍变化）。隧道二极管（§8.5）、闪存（§11）与欧姆接触（§9.2.2）也都基于隧穿。" },
+    { q:"束缚在势阱中的电子能级分立，最根本的原因是？",
+      o:["电子带负电","不确定性原理禁止电子静止","波函数必须满足边界条件，只有特定驻波被允许","泡利不相容原理"], a:2,
+      w:"根源是'波 + 边界条件'：ψ(0)=ψ(a)=0 只允许 λ=2a/n 的驻波（教材式 2.31–2.33），对应的能量自然分立。E∝n² 间隔递增，n=1 即最低能量（零点能）。" },
+    { q:"晶体中电子的允许带与禁带，最根本的成因是什么？",
+      o:["电子之间的库仑排斥","周期性势场对电子波的布拉格反射（ka=±π/a 处打开能隙）","电子的自旋取向","晶格的热涨落"], a:1,
+      w:"ka=±π/a 时电子波长 λ=2a 恰为晶格周期两倍，相邻原子面的反射波同相叠加（布拉格反射），波函数分裂成两个驻波解、能量一高一低——能隙由此打开（教材式 3.24、图 3.8）。" },
+    { q:"在 Kronig–Penney 模型中把势垒强度 P′ 调到 0，能带图变成什么样？",
+      o:["允许带收缩成分立能级","禁带全部变宽","能带连成自由电子的抛物线（连续谱）","只剩一条平带"], a:2,
+      w:"P′=0 时式 (3.24) 退化为 cos αa = cos ka，即 α=k，E=ħ²k²/2m（教材式 3.25–3.28）——没有势垒就没有反射，能隙闭合，回到自由电子气。反过来 P′→∞ 则回到孤立势阱的分立能级。" },
+  ];
+  const box=QB.el('quiz');
+  QS.forEach((it,qi)=>{
+    const d=document.createElement('div'); d.className='qbox';
+    d.innerHTML='<div class="qt"><span class="qn">Q'+(qi+1)+'</span>'+it.q+'</div>';
+    const opts=document.createElement('div'); opts.className='qopts';
+    let done=false;
+    it.o.forEach((op,oi)=>{
+      const b=document.createElement('button'); b.className='qopt'; b.textContent=op;
+      b.addEventListener('click',()=>{
+        if(done) return; done=true;
+        [...opts.children].forEach((bb,i)=>{
+          bb.disabled=true;
+          if(i===it.a) bb.classList.add('ok');
+          else if(i===oi) bb.classList.add('wrong');
+        });
+        const why=document.createElement('div'); why.className='qwhy show';
+        why.innerHTML='<b>'+(oi===it.a?"✓ 答对了！":"✗ 再想想～")+'</b> '+it.w;
+        d.appendChild(why);
+      });
+      opts.appendChild(b);
+    });
+    d.appendChild(opts); box.appendChild(d);
+  });
+})();
+
+/* ============================================================
+   导航高亮
+   ============================================================ */
+(() => {
+  const links=[...document.querySelectorAll('nav a.nl')];
+  const secs=["intro","well","step","barrier","kp","summary"].map(id=>document.getElementById(id));
+  const io=new IntersectionObserver(es=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(l=>l.classList.toggle('active', l.getAttribute('href')==="#"+e.target.id));
+      }
+    });
+  },{rootMargin:"-30% 0px -60% 0px"});
+  secs.forEach(s=>io.observe(s));
+})();
+</script>
+</body>
+</html>
